@@ -113,21 +113,14 @@ Simply add the card and select your entities.
 
 ```yaml
 type: custom:indego-mower-card
-
 entity: lawn_mower.indego_123456
-
 map_entity: camera.indego_map
-
 battery_entity: sensor.indego_battery
 charging_entity: binary_sensor.indego_charging
-
 state_detail_entity: sensor.indego_status
-
 mowed_entity: sensor.indego_mowed_percent
 mowed_size_entity: sensor.indego_mowed_area
-
 stuck_entity: binary_sensor.indego_stuck
-
 error_entity: counter.indego_errors
 ```
 
