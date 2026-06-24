@@ -1,0 +1,1 @@
+# Bosch-Indego-Mower-Card
