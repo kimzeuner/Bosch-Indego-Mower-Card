@@ -70,12 +70,26 @@ No YAML editing required.
 
 ## Installation
 
-### HACS
+### HACS (Custom Repository)
 
 1. Open HACS
-2. Add this repository as a custom repository
-3. Install **Indego Mower Card**
-4. Reload Home Assistant
+2. Select **Custom Repositories**
+3. Add:
+
+```
+https://github.com/kimzeuner/Bosch-Indego-Mower-Card
+```
+
+4. Category:
+
+```
+Dashboard
+```
+
+5. Install
+6. Refresh your browser
+
+---
 
 ### Manual Installation
 
