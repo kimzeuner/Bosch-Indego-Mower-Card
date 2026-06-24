@@ -1,4 +1,37 @@
 class IndegoMowerCardEditor extends HTMLElement {
+  const TRANSLATIONS = {
+    en: {
+      battery: "Battery",
+      mowed: "Mowed",
+      errors: "Errors",
+      stuck: "Stuck",
+      charge: "Charge",
+      yes: "Yes",
+      no: "No",
+      noMap: "No map available"
+    },
+
+    de: {
+      battery: "Batterie",
+      mowed: "Gemäht",
+      errors: "Fehler",
+      stuck: "Fest",
+      charge: "Ladung",
+      yes: "Ja",
+      no: "Nein",
+      noMap: "Keine Karte verfügbar"
+    }
+  };
+  function t(hass, key) {
+    const lang = hass?.language || "en";
+
+    return (
+      TRANSLATIONS[lang]?.[key] ||
+      TRANSLATIONS.en[key] ||
+      key
+    );
+  }
+
   set hass(hass) {
     this._hass = hass;
 
@@ -185,7 +218,7 @@ class IndegoMowerCard extends HTMLElement {
 
     stats.push(`
     <div class="stat">
-        <div class="label">Gemäht</div>
+        <div class="label">${t(hass, "mowed")}</div>
         <div class="value">
         ${mowedValue || ""}
         ${mowedValue && sizeValue ? "<br>" : ""}
@@ -200,7 +233,7 @@ class IndegoMowerCard extends HTMLElement {
 
     stats.push(`
         <div class="stat">
-        <div class="label">Fehler</div>
+        <div class="label">${t(hass, "errors")}</div>
         <div class="value ${errorCount > 0 ? "warning" : ""}">
             ${errorCount}
         </div>
@@ -211,9 +244,11 @@ class IndegoMowerCard extends HTMLElement {
     if (stuck && mowerState !== "docked") {
     stats.push(`
         <div class="stat">
-        <div class="label">Steckt fest</div>
+        <div class="label">${t(hass, "stuck")}</div>
         <div class="value ${stuck.state === "on" ? "warning" : ""}">
-            ${stuck.state === "on" ? "Ja" : "Nein"}
+            ${stuck.state === "on" 
+              ? t(hass, "yes")
+              : t(hass, "no")}
         </div>
         </div>
     `);
@@ -240,7 +275,7 @@ class IndegoMowerCard extends HTMLElement {
                 transparent 100%
             );
         ">
-        <div class="label">Ladung</div>
+        <div class="label">${t(hass, "charge")}</div>
         <div class="value">${formatValue(battery, "%")}</div>
         </div>
     `);
@@ -352,7 +387,7 @@ class IndegoMowerCard extends HTMLElement {
     mowerState !== "docked"
         ? `<div class="header">
             <div class="battery">
-            Batterie: ${batteryPct}%
+            ${t(hass, "battery")}: ${batteryPct}%
             ${charging?.state === "on" ? "⚡" : ""}
             </div>
         </div>`
@@ -362,7 +397,7 @@ class IndegoMowerCard extends HTMLElement {
     ${
         imageUrl
         ? `<img class="image" src="${imageUrl}" alt="Mower map" />`
-        : `<div class="status">Keine Karte verfügbar</div>`
+        : `<div class="status">${t(hass, "noMap")}</div>`
     }
 
     <div class="status">
