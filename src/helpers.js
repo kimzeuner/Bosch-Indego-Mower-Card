@@ -57,4 +57,5 @@ export function getErrorCount(entity) {
   }
 
   return 0;
+  
 }
