@@ -79,7 +79,7 @@ export class IndegoMowerCardEditor extends HTMLElement {
         }
 
         this._config = config;
-
+        
         this.dispatchEvent(
           new CustomEvent("config-changed", {
             detail: { config },
@@ -87,11 +87,9 @@ export class IndegoMowerCardEditor extends HTMLElement {
             composed: true
           })
         );
-      });
-    });
-
-    this._rendered = true;
-    this._rendering = false;
+        
+        this._rendered = false;
+        this.render();
   }
 }
 
