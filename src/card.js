@@ -66,7 +66,7 @@ export class IndegoMowerCard extends HTMLElement {
     const mowed = hass.states[this.config.mowed_entity];
     const mowedSize = hass.states[this.config.mowed_size_entity];
     const stuck = hass.states[this.config.stuck_entity];
-    const errors = hass.states[this.config.error_entity];
+    const alerts = hass.states[this.config.alert_entity];
 
     const batteryPct = parseInt(battery?.state || 0, 10);
     const imageUrl = cameraProxyUrl(camera);
@@ -144,9 +144,9 @@ export class IndegoMowerCard extends HTMLElement {
       `);
     }
 
-    if (errors) {
-      const errorCount = parseInt(errors.state || 0, 10);
-
+    if (alerts) {
+      const errorCount = getErrorCount(alerts);
+    
       stats.push(`
         <div class="stat">
           <div class="label">${t(translations, "errors")}</div>
