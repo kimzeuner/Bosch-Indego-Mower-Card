@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG } from "./helpers.js";
+import { DEFAULT_CONFIG, autoDetectIndegoEntities } from "./helpers.js";
 import { getTranslations, t } from "./translations.js";
 
 export class IndegoMowerCardEditor extends HTMLElement {
