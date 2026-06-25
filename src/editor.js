@@ -9,7 +9,9 @@ export class IndegoMowerCardEditor extends HTMLElement {
       picker.hass = hass;
     });
 
-    this.render();
+    if (!this._initialized && this._config) {
+      this.render();
+    }
   }
 
   setConfig(config) {
@@ -18,13 +20,15 @@ export class IndegoMowerCardEditor extends HTMLElement {
       ...config,
     };
 
-    this.render();
+    if (!this._initialized && this._hass) {
+      this.render();
+    } else {
+      this.updatePickerValues();
+    }
   }
 
   render() {
-    if (!this._hass || !this._config || this._rendering) return;
-
-    this._rendering = true;
+    if (!this._hass || !this._config || this._initialized) return;
 
     const translations = getTranslations(this._hass);
 
@@ -71,16 +75,14 @@ export class IndegoMowerCardEditor extends HTMLElement {
           config[key] = value;
 
           if (key === "entity") {
-            Object.assign(
-              config,
-              autoDetectIndegoEntities(this._hass, value)
-            );
+            Object.assign(config, autoDetectIndegoEntities(this._hass, value));
           }
         } else {
           delete config[key];
         }
 
         this._config = config;
+        this.updatePickerValues();
 
         this.dispatchEvent(
           new CustomEvent("config-changed", {
@@ -89,12 +91,23 @@ export class IndegoMowerCardEditor extends HTMLElement {
             composed: true,
           })
         );
-
-        this.render();
       });
     });
 
-    this._rendering = false;
+    this._initialized = true;
+  }
+
+  updatePickerValues() {
+    if (!this._config) return;
+
+    this.querySelectorAll("ha-entity-picker").forEach((picker) => {
+      const key = picker.getAttribute("config-value");
+      const value = this._config[key] || "";
+
+      if (picker.value !== value) {
+        picker.value = value;
+      }
+    });
   }
 }
 
