@@ -36,3 +36,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/indego-mower-card.js
+          overwrite_files: true
