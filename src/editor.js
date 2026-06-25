@@ -80,8 +80,15 @@ export class IndegoMowerCardEditor extends HTMLElement {
           config[key] = value;
 
           if (key === "entity") {
-            Object.assign(config, autoDetectIndegoEntities(this._hass, value));
+            const detected = autoDetectIndegoEntities(this._hass, value);
+            
+            Object.entries(detected).forEach(([detectedKey, detectedValue]) => {
+              if (!config[detectedKey]) {
+                config[detectedKey] = detectedValue;
+              }
+            });
           }
+          
         } else {
           delete config[key];
         }
