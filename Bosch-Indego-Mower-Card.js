@@ -67,8 +67,20 @@ class IndegoMowerCardEditor extends HTMLElement {
   }
 
   setConfig(config) {
-    this._config = config;
-
+    this._config = {
+      entity: "",
+      map_entity: "",
+      battery_entity: "",
+      charging_entity: "",
+      state_detail_entity: "",
+      mowed_entity: "",
+      mowed_size_entity: "",
+      stuck_entity: "",
+      alert_entity: "",
+      error_entity: "",
+      ...config,
+    };
+  
     if (!this._rendered) {
       this.render();
     }
@@ -149,25 +161,33 @@ class IndegoMowerCard extends HTMLElement {
 
   static getStubConfig() {
     return {
-      entity: "lawn_mower.indego_122604270",
-      map_entity: "camera.indego_122604270",
-      battery_entity: "sensor.indego_122604270_battery_percentage",
-      charging_entity: "binary_sensor.indego_122604270_battery_charging",
-      state_detail_entity: "sensor.indego_122604270_mower_state_detail",
-      mowed_entity: "sensor.indego_122604270_lawn_mowed",
-      mowed_size_entity: "sensor.indego_122604270_lawn_mowed_size",
-      stuck_entity: "binary_sensor.indego_122604270_mower_stuck",
-      alert_entity: "binary_sensor.indego_122604270_alert",
-      error_entity: "counter.indego_fehler_total",
+      entity: "",
+      map_entity: "",
+      battery_entity: "",
+      charging_entity: "",
+      state_detail_entity: "",
+      mowed_entity: "",
+      mowed_size_entity: "",
+      stuck_entity: "",
+      alert_entity: "",
+      error_entity: "",
     };
   }
 
   setConfig(config) {
-    if (!config.entity) {
-      throw new Error("entity is required");
-    }
-
-    this.config = config;
+    this.config = {
+      entity: "",
+      map_entity: "",
+      battery_entity: "",
+      charging_entity: "",
+      state_detail_entity: "",
+      mowed_entity: "",
+      mowed_size_entity: "",
+      stuck_entity: "",
+      alert_entity: "",
+      error_entity: "",
+      ...config,
+    };
   }
 
   getCardSize() {
@@ -185,6 +205,22 @@ class IndegoMowerCard extends HTMLElement {
 
     const translations = await loadIndegoTranslations(hass);
 
+    if (!this.config?.entity) {
+      if (!this.content) {
+        const card = document.createElement("ha-card");
+        this.content = document.createElement("div");
+        card.appendChild(this.content);
+        this.appendChild(card);
+      }
+    
+      this.content.innerHTML = `
+        <div style="padding:16px;">
+          ${t(translations, "select_entity")}
+        </div>
+      `;
+      return;
+    }
+    
     const mower = hass.states[this.config.entity];
     const mowerState = mower?.state;
     const camera = hass.states[this.config.map_entity];
