@@ -46,9 +46,14 @@ export function getErrorCount(entity) {
     return state;
   }
 
-  const alerts = Number(entity.attributes?.alerts_count);
-  if (Number.isFinite(alerts)) {
-    return alerts;
+  const attributes = entity.attributes;
+
+  const count =
+    Number(attributes?.alerts_count) ??
+    Number(attributes?.error_count);
+
+  if (Number.isFinite(count)) {
+    return count;
   }
 
   return 0;
