@@ -1,0 +1,12 @@
+{
+  "name": "indego-mower-card",
+  "version": "0.1.0",
+  "description": "A Home Assistant Lovelace card for Bosch Indego robotic mowers",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
