@@ -1,0 +1,35 @@
+name: Build release
+
+on:
+  release:
+    types:
+      - published
+      - prereleased
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build and upload card
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build card
+        run: npm run build
+
+      - name: Upload built card to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/indego-mower-card.js
