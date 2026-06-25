@@ -40,8 +40,7 @@ export class IndegoMowerCardEditor extends HTMLElement {
       ["mowed_entity", t(translations, "editor.mowed")],
       ["mowed_size_entity", t(translations, "editor.mowed_size")],
       ["stuck_entity", t(translations, "editor.stuck")],
-      ["alert_entity", t(translations, "editor.alert")],
-      ["error_entity", t(translations, "editor.errors")]
+      ["alert_entity", t(translations, "editor.errors")]
     ];
 
     this.innerHTML = `
