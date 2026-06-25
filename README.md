@@ -165,7 +165,7 @@ error_entity: counter.indego_errors
 
 ## Screenshots
 
-_Add screenshots here_
+![Bosch Indego Mower Card](images/mower_card_mowing.png)
 
 ---
 
