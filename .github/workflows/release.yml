@@ -32,8 +32,11 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Copy built card to root
+        run: cp dist/indego-mower-card.js indego-mower-card.js
+  
       - name: Upload card to release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/indego-mower-card.js
+          files: indego-mower-card.js
           overwrite_files: true
