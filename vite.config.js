@@ -9,6 +9,11 @@ export default defineConfig({
       fileName: () => "indego-mower-card.js"
     },
     outDir: "dist",
-    emptyOutDir: true
+    emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        inlineDynamicImports: true
+      }
+    }
   }
 });
