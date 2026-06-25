@@ -1,5 +1,4 @@
 {
-  "select_entity": "Bitte wähle im Karteneditor eine Mäher-Entität aus.",
   "battery": "Batterie",
   "mowed": "Gemäht",
   "errors": "Fehler",
@@ -8,6 +7,7 @@
   "yes": "Ja",
   "no": "Nein",
   "no_map": "Keine Karte verfügbar",
+  "select_entity": "Bitte wähle im Karteneditor eine Mäher-Entität aus.",
   "editor": {
     "mower": "Mäher",
     "map": "Karte",

@@ -1,5 +1,6 @@
 {
-    "name": "Bosch Indego Mower Card",
-    "filename": "Bosch-Indego-Mower-Card.js",
-    "render_readme": true
+  "name": "Indego Mower Card",
+  "filename": "indego-mower-card.js",
+  "render_readme": true,
+  "homeassistant": "2025.1.0"
 }

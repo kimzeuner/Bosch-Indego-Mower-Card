@@ -1,5 +1,4 @@
 {
-  "select_entity": "Please select a mower entity in the card configuration.",
   "battery": "Battery",
   "mowed": "Mowed",
   "errors": "Errors",
@@ -8,6 +7,7 @@
   "yes": "Yes",
   "no": "No",
   "no_map": "No map available",
+  "select_entity": "Please select a mower entity in the card configuration.",
   "editor": {
     "mower": "Mower",
     "map": "Map",
