@@ -1,4 +1,4 @@
-import { LitElement, html, css } from "lit";
+import { LitElement, html, css, unsafeCSS } from "lit";
 import {
   DEFAULT_CONFIG,
   batteryFillColor,
@@ -17,7 +17,7 @@ export class IndegoMowerCard extends LitElement {
   };
 
   static styles = css`
-    ${CARD_STYLES}
+    ${unsafeCSS(CARD_STYLES)}
   `;
 
   static getConfigElement() {
