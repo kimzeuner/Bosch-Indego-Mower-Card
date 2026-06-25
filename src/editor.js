@@ -9,9 +9,7 @@ export class IndegoMowerCardEditor extends HTMLElement {
       picker.hass = hass;
     });
 
-    if (!this._rendered) {
-      this.render();
-    }
+    this.render();
   }
 
   setConfig(config) {
@@ -20,13 +18,11 @@ export class IndegoMowerCardEditor extends HTMLElement {
       ...config,
     };
 
-    if (!this._rendered) {
-      this.render();
-    }
+    this.render();
   }
 
   render() {
-    if (!this._config || this._rendering) return;
+    if (!this._hass || !this._config || this._rendering) return;
 
     this._rendering = true;
 
@@ -51,7 +47,6 @@ export class IndegoMowerCardEditor extends HTMLElement {
             ([key, label]) => `
               <ha-entity-picker
                 label="${label}"
-                value="${this._config[key] || ""}"
                 config-value="${key}"
                 allow-custom-entity
                 style="display:block; margin-bottom:12px;"
@@ -63,10 +58,12 @@ export class IndegoMowerCardEditor extends HTMLElement {
     `;
 
     this.querySelectorAll("ha-entity-picker").forEach((picker) => {
+      const key = picker.getAttribute("config-value");
+
       picker.hass = this._hass;
+      picker.value = this._config[key] || "";
 
       picker.addEventListener("value-changed", (event) => {
-        const key = picker.getAttribute("config-value");
         const value = event.detail.value;
         const config = { ...this._config };
 
@@ -74,7 +71,10 @@ export class IndegoMowerCardEditor extends HTMLElement {
           config[key] = value;
 
           if (key === "entity") {
-            Object.assign(config, autoDetectIndegoEntities(this._hass, value));
+            Object.assign(
+              config,
+              autoDetectIndegoEntities(this._hass, value)
+            );
           }
         } else {
           delete config[key];
@@ -90,15 +90,14 @@ export class IndegoMowerCardEditor extends HTMLElement {
           })
         );
 
-        this._rendered = false;
-        this._rendering = false;
         this.render();
       });
     });
 
-    this._rendered = true;
     this._rendering = false;
   }
 }
 
-customElements.define("indego-mower-card-editor", IndegoMowerCardEditor);
+if (!customElements.get("indego-mower-card-editor")) {
+  customElements.define("indego-mower-card-editor", IndegoMowerCardEditor);
+}
