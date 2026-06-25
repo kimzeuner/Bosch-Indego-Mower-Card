@@ -30,20 +30,25 @@ export function batteryFillColor(percent) {
 
 export function cameraProxyUrl(camera) {
   if (!camera) return "";
-  return `/api/camera_proxy/${camera.entity_id}?token=${camera.attributes.access_token || ""}`;
+
+  const token = camera.attributes?.access_token;
+
+  return token
+    ? `/api/camera_proxy/${camera.entity_id}?token=${token}`
+    : `/api/camera_proxy/${camera.entity_id}`;
 }
 
 export function getErrorCount(entity) {
-  if (!entity) return null;
+  if (!entity) return 0;
 
-  const stateCount = Number.parseInt(entity.state, 10);
-  if (!Number.isNaN(stateCount)) {
-    return stateCount;
+  const state = Number(entity.state);
+  if (Number.isFinite(state)) {
+    return state;
   }
 
-  const attributeCount = Number.parseInt(entity.attributes?.alerts_count, 10);
-  if (!Number.isNaN(attributeCount)) {
-    return attributeCount;
+  const alerts = Number(entity.attributes?.alerts_count);
+  if (Number.isFinite(alerts)) {
+    return alerts;
   }
 
   return 0;
