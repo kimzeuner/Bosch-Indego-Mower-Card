@@ -1,4 +1,4 @@
-const DEFAULT_CONFIG = {
+const _ = {
   entity: "",
   map_entity: "",
   battery_entity: "",
@@ -7,93 +7,143 @@ const DEFAULT_CONFIG = {
   mowed_entity: "",
   mowed_size_entity: "",
   stuck_entity: "",
-  alert_entity: "",
-  error_entity: ""
+  alert_entity: ""
 };
-
-const TRANSLATIONS = {
-  en: {
-    battery: "Battery",
-    mowed: "Mowed",
-    errors: "Errors",
-    stuck: "Stuck",
-    charge: "Charge",
-    yes: "Yes",
-    no: "No",
-    no_map: "No map available",
-    select_entity: "Please select a mower entity in the card configuration.",
-    editor: {
-      mower: "Mower",
-      map: "Map",
-      battery: "Battery",
-      charging: "Charging",
-      state_detail: "Status detail",
-      mowed: "Mowed",
-      mowed_size: "Mowed area",
-      stuck: "Stuck",
-      alert: "Alert",
-      errors: "Errors"
-    }
-  },
-  de: {
-    battery: "Batterie",
-    mowed: "Gemäht",
-    errors: "Fehler",
-    stuck: "Fest",
-    charge: "Ladung",
-    yes: "Ja",
-    no: "Nein",
-    no_map: "Keine Karte verfügbar",
-    select_entity: "Bitte wähle im Karteneditor eine Mäher-Entität aus.",
-    editor: {
-      mower: "Mäher",
-      map: "Karte",
-      battery: "Batterie",
-      charging: "Lädt",
-      state_detail: "Status Detail",
-      mowed: "Gemäht",
-      mowed_size: "Gemähte Fläche",
-      stuck: "Festgefahren",
-      alert: "Alarm",
-      errors: "Fehler"
-    }
+function y(n, t = "") {
+  if (!n) return null;
+  const e = n.attributes.unit_of_measurement || t;
+  return `${n.state}${e ? " " + e : ""}`;
+}
+function v(n) {
+  return n > 70 ? "rgba(0,180,0,0.35)" : n > 30 ? "rgba(255,165,0,0.35)" : "rgba(200,0,0,0.35)";
+}
+function x(n) {
+  return n > 50 ? "rgba(0,180,0,0.20)" : n > 25 ? "rgba(255,165,0,0.20)" : "rgba(255,0,0,0.20)";
+}
+function k(n) {
+  var e;
+  if (!n) return "";
+  const t = (e = n.attributes) == null ? void 0 : e.access_token;
+  return t ? `/api/camera_proxy/${n.entity_id}?token=${t}` : `/api/camera_proxy/${n.entity_id}`;
+}
+function C(n) {
+  var s, d;
+  if (!n) return 0;
+  const t = Number(n.state);
+  if (Number.isFinite(t))
+    return t;
+  const e = Number((s = n.attributes) == null ? void 0 : s.alerts_count);
+  if (Number.isFinite(e))
+    return e;
+  const i = Number((d = n.attributes) == null ? void 0 : d.error_count);
+  return Number.isFinite(i) ? i : 0;
+}
+const E = "Battery", S = "Mowed", M = "Errors", A = "Stuck", L = "Charge", N = "Yes", F = "No", z = "No map available", B = "Please select a mower entity in the card configuration.", T = {
+  mower: "Mower",
+  map: "Map",
+  battery: "Battery",
+  charging: "Charging",
+  state_detail: "Status detail",
+  mowed: "Mowed",
+  mowed_size: "Mowed area",
+  stuck: "Stuck",
+  alert: "Alert",
+  errors: "Errors"
+}, H = {
+  battery: E,
+  mowed: S,
+  errors: M,
+  stuck: A,
+  charge: L,
+  yes: N,
+  no: F,
+  no_map: z,
+  select_entity: B,
+  editor: T
+}, I = "Batterie", q = "Gemäht", G = "Fehler", K = "Fest", U = "Ladung", V = "Ja", D = "Nein", O = "Keine Karte verfügbar", R = "Bitte wähle im Karteneditor eine Mäher-Entität aus.", Y = {
+  mower: "Mäher",
+  map: "Karte",
+  battery: "Batterie",
+  charging: "Lädt",
+  state_detail: "Status Detail",
+  mowed: "Gemäht",
+  mowed_size: "Gemähte Fläche",
+  stuck: "Festgefahren",
+  alert: "Alarm",
+  errors: "Fehler"
+}, J = {
+  battery: I,
+  mowed: q,
+  errors: G,
+  stuck: K,
+  charge: U,
+  yes: V,
+  no: D,
+  no_map: O,
+  select_entity: R,
+  editor: Y
+}, f = { en: H, de: J };
+function $(n) {
+  const t = (n == null ? void 0 : n.language) || "en", e = t.split("-")[0];
+  return f[t] || f[e] || f.en;
+}
+function r(n, t) {
+  return t.split(".").reduce((e, i) => e == null ? void 0 : e[i], n) || t;
+}
+class P extends HTMLElement {
+  set hass(t) {
+    this._hass = t, this.querySelectorAll("ha-entity-picker").forEach((e) => {
+      e.hass = t;
+    }), this._rendered || this.render();
   }
-};
-
-function getTranslations(hass) {
-  const language = hass?.language || "en";
-  const baseLanguage = language.split("-")[0];
-  return TRANSLATIONS[language] || TRANSLATIONS[baseLanguage] || TRANSLATIONS.en;
+  setConfig(t) {
+    this._config = {
+      ..._,
+      ...t
+    }, this._rendered || this.render();
+  }
+  render() {
+    if (!this._config || this._rendering) return;
+    this._rendering = !0;
+    const t = $(this._hass), e = [
+      ["entity", r(t, "editor.mower")],
+      ["map_entity", r(t, "editor.map")],
+      ["battery_entity", r(t, "editor.battery")],
+      ["charging_entity", r(t, "editor.charging")],
+      ["state_detail_entity", r(t, "editor.state_detail")],
+      ["mowed_entity", r(t, "editor.mowed")],
+      ["mowed_size_entity", r(t, "editor.mowed_size")],
+      ["stuck_entity", r(t, "editor.stuck")],
+      ["alert_entity", r(t, "editor.errors")]
+    ];
+    this.innerHTML = `
+      <div style="padding:16px;">
+        ${e.map(([i, s]) => `
+          <ha-entity-picker
+            label="${s}"
+            value="${this._config[i] || ""}"
+            config-value="${i}"
+            allow-custom-entity
+            style="display:block; margin-bottom:12px;"
+          ></ha-entity-picker>
+        `).join("")}
+      </div>
+    `, this.querySelectorAll("ha-entity-picker").forEach((i) => {
+      i.hass = this._hass, i.addEventListener("value-changed", (s) => {
+        const d = i.getAttribute("config-value"), a = s.detail.value, o = { ...this._config };
+        a ? o[d] = a : delete o[d], this._config = o, this.dispatchEvent(
+          new CustomEvent("config-changed", {
+            detail: { config: o },
+            bubbles: !0,
+            composed: !0
+          })
+        );
+      });
+    }), this._rendered = !0, this._rendering = !1;
+  }
 }
-
-function t(translations, key) {
-  return key.split(".").reduce((obj, part) => obj?.[part], translations) || key;
-}
-
-function formatValue(entity, fallbackUnit = "") {
-  if (!entity) return null;
-  const unit = entity.attributes.unit_of_measurement || fallbackUnit;
-  return `${entity.state}${unit ? " " + unit : ""}`;
-}
-
-function batteryHeaderColor(percent) {
-  if (percent > 70) return "rgba(0,180,0,0.35)";
-  if (percent > 30) return "rgba(255,165,0,0.35)";
-  return "rgba(200,0,0,0.35)";
-}
-
-function batteryFillColor(percent) {
-  if (percent > 50) return "rgba(0,180,0,0.20)";
-  if (percent > 25) return "rgba(255,165,0,0.20)";
-  return "rgba(255,0,0,0.20)";
-}
-
-function cameraProxyUrl(camera) {
-  if (!camera) return "";
-  return `/api/camera_proxy/${camera.entity_id}?token=${camera.attributes.access_token || ""}`;
-}
-
-const CARD_STYLES = `
+customElements.define("indego-mower-card-editor", P);
+const j = `
   .header {
     padding: 12px;
     display: flex;
@@ -175,312 +225,179 @@ const CARD_STYLES = `
     --mdc-icon-size: 28px;
   }
 `;
-
-class IndegoMowerCardEditor extends HTMLElement {
-  set hass(hass) {
-    this._hass = hass;
-
-    this.querySelectorAll("ha-entity-picker").forEach((picker) => {
-      picker.hass = hass;
-    });
-
-    if (!this._rendered) {
-      this.render();
-    }
-  }
-
-  setConfig(config) {
-    this._config = {
-      ...DEFAULT_CONFIG,
-      ...config
-    };
-
-    if (!this._rendered) {
-      this.render();
-    }
-  }
-
-  render() {
-    if (!this._config || this._rendering) return;
-
-    this._rendering = true;
-    const translations = getTranslations(this._hass);
-
-    const fields = [
-      ["entity", t(translations, "editor.mower")],
-      ["map_entity", t(translations, "editor.map")],
-      ["battery_entity", t(translations, "editor.battery")],
-      ["charging_entity", t(translations, "editor.charging")],
-      ["state_detail_entity", t(translations, "editor.state_detail")],
-      ["mowed_entity", t(translations, "editor.mowed")],
-      ["mowed_size_entity", t(translations, "editor.mowed_size")],
-      ["stuck_entity", t(translations, "editor.stuck")],
-      ["alert_entity", t(translations, "editor.alert")],
-      ["error_entity", t(translations, "editor.errors")]
-    ];
-
-    this.innerHTML = `
-      <div style="padding:16px;">
-        ${fields.map(([key, label]) => `
-          <ha-entity-picker
-            label="${label}"
-            value="${this._config[key] || ""}"
-            config-value="${key}"
-            allow-custom-entity
-            style="display:block; margin-bottom:12px;"
-          ></ha-entity-picker>
-        `).join("")}
-      </div>
-    `;
-
-    this.querySelectorAll("ha-entity-picker").forEach((picker) => {
-      picker.hass = this._hass;
-
-      picker.addEventListener("value-changed", (event) => {
-        const key = picker.getAttribute("config-value");
-        const value = event.detail.value;
-        const config = { ...this._config };
-
-        if (value) {
-          config[key] = value;
-        } else {
-          delete config[key];
-        }
-
-        this._config = config;
-
-        this.dispatchEvent(
-          new CustomEvent("config-changed", {
-            detail: { config },
-            bubbles: true,
-            composed: true
-          })
-        );
-      });
-    });
-
-    this._rendered = true;
-    this._rendering = false;
-  }
-}
-
-customElements.define("indego-mower-card-editor", IndegoMowerCardEditor);
-
-class IndegoMowerCard extends HTMLElement {
+class Q extends HTMLElement {
   static getConfigElement() {
     return document.createElement("indego-mower-card-editor");
   }
-
   static getStubConfig() {
-    return { ...DEFAULT_CONFIG };
+    return { ..._ };
   }
-
-  setConfig(config) {
+  setConfig(t) {
     this.config = {
-      ...DEFAULT_CONFIG,
-      ...config
+      ..._,
+      ...t
     };
   }
-
   getCardSize() {
     return 6;
   }
-
-  set hass(hass) {
-    this._hass = hass;
-    this.render();
+  set hass(t) {
+    this._hass = t, this.render();
   }
-
   render() {
-    const hass = this._hass;
-    if (!hass || !this.config) return;
-
-    const translations = getTranslations(hass);
-
+    const t = this._hass;
+    if (!t || !this.config) return;
+    const e = $(t);
     if (!this.content) {
-      const card = document.createElement("ha-card");
-      card.style.padding = "0";
-      this.content = document.createElement("div");
-      card.appendChild(this.content);
-      this.appendChild(card);
+      const p = document.createElement("ha-card");
+      p.style.padding = "0", this.content = document.createElement("div"), p.appendChild(this.content), this.appendChild(p);
     }
-
     if (!this.config.entity) {
       this.content.innerHTML = `
         <div style="padding:16px;">
-          ${t(translations, "select_entity")}
+          ${r(e, "select_entity")}
         </div>
       `;
       return;
     }
-
-    const mower = hass.states[this.config.entity];
-    const mowerState = mower?.state;
-    const camera = hass.states[this.config.map_entity];
-    const battery = hass.states[this.config.battery_entity];
-    const charging = hass.states[this.config.charging_entity];
-    const stateDetail = hass.states[this.config.state_detail_entity];
-    const mowed = hass.states[this.config.mowed_entity];
-    const mowedSize = hass.states[this.config.mowed_size_entity];
-    const stuck = hass.states[this.config.stuck_entity];
-    const errors = hass.states[this.config.error_entity];
-
-    const batteryPct = parseInt(battery?.state || 0, 10);
-    const imageUrl = cameraProxyUrl(camera);
-    const stats = this.buildStats({
-      translations,
-      mowerState,
-      battery,
-      batteryPct,
-      mowed,
-      mowedSize,
-      stuck,
-      errors
+    const i = t.states[this.config.entity], s = i == null ? void 0 : i.state, d = t.states[this.config.map_entity], a = t.states[this.config.battery_entity], o = t.states[this.config.charging_entity], u = t.states[this.config.state_detail_entity], l = t.states[this.config.mowed_entity], c = t.states[this.config.mowed_size_entity], h = t.states[this.config.stuck_entity], w = t.states[this.config.alert_entity], g = parseInt((a == null ? void 0 : a.state) || 0, 10), b = k(d), m = this.buildStats({
+      translations: e,
+      mowerState: s,
+      battery: a,
+      batteryPct: g,
+      mowed: l,
+      mowedSize: c,
+      stuck: h,
+      alerts: w
     });
-
     this.content.innerHTML = `
-      <style>${CARD_STYLES}</style>
+      <style>${j}</style>
 
-      ${mowerState !== "docked" && battery ? `
+      ${s !== "docked" && a ? `
         <div class="header">
           <div class="battery" style="
             background: linear-gradient(
               90deg,
-              ${batteryHeaderColor(batteryPct)} 0%,
-              ${batteryHeaderColor(batteryPct)} ${batteryPct}%,
-              transparent ${batteryPct}%,
+              ${v(g)} 0%,
+              ${v(g)} ${g}%,
+              transparent ${g}%,
               transparent 100%
             );
           ">
-            ${t(translations, "battery")}: ${batteryPct}%
-            ${charging?.state === "on" ? "⚡" : ""}
+            ${r(e, "battery")}: ${g}%
+            ${(o == null ? void 0 : o.state) === "on" ? "⚡" : ""}
           </div>
         </div>
       ` : ""}
 
-      ${imageUrl
-        ? `<img class="image" src="${imageUrl}" alt="Mower map" />`
-        : `<div class="status">${t(translations, "no_map")}</div>`}
+      ${b ? `<img class="image" src="${b}" alt="Mower map" />` : `<div class="status">${r(e, "no_map")}</div>`}
 
       <div class="status">
-        ${stateDetail?.state || mower?.state || "-"}
+        ${(u == null ? void 0 : u.state) || (i == null ? void 0 : i.state) || "-"}
       </div>
 
-      ${stats.length ? `
-        <div class="stats" style="grid-template-columns: repeat(${stats.length}, 1fr);">
-          ${stats.join("")}
+      ${m.length ? `
+        <div class="stats" style="grid-template-columns: repeat(${m.length}, 1fr);">
+          ${m.join("")}
         </div>
       ` : ""}
 
       <div class="actions">
-        ${this.renderActionButton("start", "mdi:play", mowerState === "mowing")}
-        ${this.renderActionButton("pause", "mdi:pause", mowerState === "paused" || mowerState === "docked")}
-        ${this.renderActionButton("dock", "mdi:home-import-outline", mowerState === "docked")}
+        ${this.renderActionButton("start", "mdi:play", s === "mowing")}
+        ${this.renderActionButton("pause", "mdi:pause", s === "paused" || s === "docked")}
+        ${this.renderActionButton("dock", "mdi:home-import-outline", s === "docked")}
       </div>
-    `;
-
-    this.addActionHandlers(hass);
+    `, this.addActionHandlers(t);
   }
-
-  buildStats({ translations, mowerState, battery, batteryPct, mowed, mowedSize, stuck, errors }) {
-    const stats = [];
-
-    if (mowed || mowedSize) {
-      const mowedValue = mowed ? formatValue(mowed, "%") : null;
-      const sizeValue = mowedSize ? formatValue(mowedSize, "m²") : null;
-
-      stats.push(`
+  buildStats({
+    translations: t,
+    mowerState: e,
+    battery: i,
+    batteryPct: s,
+    mowed: d,
+    mowedSize: a,
+    stuck: o,
+    alerts: u
+  }) {
+    const l = [];
+    if (d || a) {
+      const c = d ? y(d, "%") : null, h = a ? y(a, "m²") : null;
+      l.push(`
         <div class="stat">
-          <div class="label">${t(translations, "mowed")}</div>
+          <div class="label">${r(t, "mowed")}</div>
           <div class="value">
-            ${mowedValue || ""}
-            ${mowedValue && sizeValue ? "<br>" : ""}
-            ${sizeValue || ""}
+            ${c || ""}
+            ${c && h ? "<br>" : ""}
+            ${h || ""}
           </div>
         </div>
       `);
     }
-
-    if (errors) {
-      const errorCount = parseInt(errors.state || 0, 10);
-
-      stats.push(`
+    if (u) {
+      const c = C(u);
+      l.push(`
         <div class="stat">
-          <div class="label">${t(translations, "errors")}</div>
-          <div class="value ${errorCount > 0 ? "warning" : ""}">
-            ${errorCount}
+          <div class="label">${r(t, "errors")}</div>
+          <div class="value ${c > 0 ? "warning" : ""}">
+            ${c}
           </div>
         </div>
       `);
     }
-
-    if (stuck && mowerState !== "docked") {
-      stats.push(`
+    if (o && e !== "docked" && l.push(`
         <div class="stat">
-          <div class="label">${t(translations, "stuck")}</div>
-          <div class="value ${stuck.state === "on" ? "warning" : ""}">
-            ${stuck.state === "on" ? t(translations, "yes") : t(translations, "no")}
+          <div class="label">${r(t, "stuck")}</div>
+          <div class="value ${o.state === "on" ? "warning" : ""}">
+            ${o.state === "on" ? r(t, "yes") : r(t, "no")}
           </div>
         </div>
-      `);
-    }
-
-    if (battery && mowerState === "docked") {
-      const fillColor = batteryFillColor(batteryPct);
-
-      stats.push(`
+      `), i && e === "docked") {
+      const c = x(s);
+      l.push(`
         <div class="stat battery-stat" style="
           background: linear-gradient(
             to top,
-            ${fillColor} 0%,
-            ${fillColor} ${batteryPct}%,
-            transparent ${batteryPct}%,
+            ${c} 0%,
+            ${c} ${s}%,
+            transparent ${s}%,
             transparent 100%
           );
         ">
-          <div class="label">${t(translations, "charge")}</div>
-          <div class="value">${formatValue(battery, "%")}</div>
+          <div class="label">${r(t, "charge")}</div>
+          <div class="value">${y(i, "%")}</div>
         </div>
       `);
     }
-
-    return stats;
+    return l;
   }
-
-  renderActionButton(id, icon, disabled) {
+  renderActionButton(t, e, i) {
     return `
-      <button id="${id}" type="button">
+      <button id="${t}" type="button">
         <ha-icon
-          icon="${icon}"
-          style="color:${disabled ? "var(--disabled-text-color)" : "var(--primary-color)"}">
+          icon="${e}"
+          style="color:${i ? "var(--disabled-text-color)" : "var(--primary-color)"}">
         </ha-icon>
       </button>
     `;
   }
-
-  addActionHandlers(hass) {
-    this.content.querySelector("#start")?.addEventListener("click", () => {
-      hass.callService("lawn_mower", "start_mowing", {
+  addActionHandlers(t) {
+    var e, i, s;
+    (e = this.content.querySelector("#start")) == null || e.addEventListener("click", () => {
+      t.callService("lawn_mower", "start_mowing", {
         entity_id: this.config.entity
       });
-    });
-
-    this.content.querySelector("#pause")?.addEventListener("click", () => {
-      hass.callService("lawn_mower", "pause", {
+    }), (i = this.content.querySelector("#pause")) == null || i.addEventListener("click", () => {
+      t.callService("lawn_mower", "pause", {
         entity_id: this.config.entity
       });
-    });
-
-    this.content.querySelector("#dock")?.addEventListener("click", () => {
-      hass.callService("lawn_mower", "dock", {
+    }), (s = this.content.querySelector("#dock")) == null || s.addEventListener("click", () => {
+      t.callService("lawn_mower", "dock", {
         entity_id: this.config.entity
       });
     });
   }
 }
-
-customElements.define("indego-mower-card", IndegoMowerCard);
-
+customElements.define("indego-mower-card", Q);
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "indego-mower-card",

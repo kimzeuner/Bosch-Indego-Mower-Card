@@ -3,7 +3,8 @@ import {
   batteryFillColor,
   batteryHeaderColor,
   cameraProxyUrl,
-  formatValue
+  formatValue,
+  getErrorCount
 } from "./helpers.js";
 import { CARD_STYLES } from "./styles.js";
 import { getTranslations, t } from "./translations.js";
@@ -65,7 +66,7 @@ export class IndegoMowerCard extends HTMLElement {
     const mowed = hass.states[this.config.mowed_entity];
     const mowedSize = hass.states[this.config.mowed_size_entity];
     const stuck = hass.states[this.config.stuck_entity];
-    const errors = hass.states[this.config.error_entity];
+    const alerts = hass.states[this.config.alert_entity];
 
     const batteryPct = parseInt(battery?.state || 0, 10);
     const imageUrl = cameraProxyUrl(camera);
@@ -77,7 +78,7 @@ export class IndegoMowerCard extends HTMLElement {
       mowed,
       mowedSize,
       stuck,
-      errors
+      alerts
     });
 
     this.content.innerHTML = `
@@ -124,7 +125,16 @@ export class IndegoMowerCard extends HTMLElement {
     this.addActionHandlers(hass);
   }
 
-  buildStats({ translations, mowerState, battery, batteryPct, mowed, mowedSize, stuck, errors }) {
+  buildStats({ 
+    translations, 
+    mowerState, 
+    battery, 
+    batteryPct, 
+    mowed, 
+    mowedSize, 
+    stuck, 
+    alerts 
+  }) {
     const stats = [];
 
     if (mowed || mowedSize) {
@@ -143,8 +153,8 @@ export class IndegoMowerCard extends HTMLElement {
       `);
     }
 
-    if (errors) {
-      const errorCount = parseInt(errors.state || 0, 10);
+    if (alerts) {
+      const errorCount = getErrorCount(alerts);
 
       stats.push(`
         <div class="stat">

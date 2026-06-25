@@ -1,4 +1,4 @@
-name: Build release
+name: Release
 
 on:
   release:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build and upload card
+    name: Build release asset
     runs-on: ubuntu-latest
 
     steps:
@@ -21,15 +21,22 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
+          node-version: 24
+      
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      - name: Build card
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
         run: npm run build
 
-      - name: Upload built card to release
+      - name: Copy built card to root
+        run: cp dist/indego-mower-card.js indego-mower-card.js
+  
+      - name: Upload card to release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/indego-mower-card.js
+          files: indego-mower-card.js
+          overwrite_files: true
