@@ -59,3 +59,31 @@ export function getErrorCount(entity) {
   return 0;
   
 }
+
+export function autoDetectIndegoEntities(hass, mowerEntityId) {
+  if (!hass || !mowerEntityId) return {};
+
+  const objectId = mowerEntityId.split(".")[1];
+  if (!objectId) return {};
+
+  const candidates = {
+    map_entity: `camera.${objectId}`,
+    battery_entity: `sensor.${objectId}_battery_percentage`,
+    charging_entity: `binary_sensor.${objectId}_battery_charging`,
+    state_detail_entity: `sensor.${objectId}_mower_state_detail`,
+    mowed_entity: `sensor.${objectId}_lawn_mowed`,
+    mowed_size_entity: `sensor.${objectId}_lawn_mowed_size`,
+    stuck_entity: `binary_sensor.${objectId}_mower_stuck`,
+    alert_entity: `binary_sensor.${objectId}_alert`,
+  };
+
+  const detected = {};
+
+  Object.entries(candidates).forEach(([key, entityId]) => {
+    if (hass.states[entityId]) {
+      detected[key] = entityId;
+    }
+  });
+
+  return detected;
+}

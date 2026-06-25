@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG } from "./helpers.js";
+import { DEFAULT_CONFIG, autoDetectIndegoEntities } from "./helpers.js";
 import { getTranslations, t } from "./translations.js";
 
 export class IndegoMowerCardEditor extends HTMLElement {
@@ -9,7 +9,7 @@ export class IndegoMowerCardEditor extends HTMLElement {
       picker.hass = hass;
     });
 
-    if (!this._rendered) {
+    if (!this._initialized && this._config) {
       this.render();
     }
   }
@@ -17,18 +17,19 @@ export class IndegoMowerCardEditor extends HTMLElement {
   setConfig(config) {
     this._config = {
       ...DEFAULT_CONFIG,
-      ...config
+      ...config,
     };
 
-    if (!this._rendered) {
+    if (!this._initialized && this._hass) {
       this.render();
+    } else {
+      this.updatePickerValues();
     }
   }
 
   render() {
-    if (!this._config || this._rendering) return;
+    if (!this._hass || !this._config || this._initialized) return;
 
-    this._rendering = true;
     const translations = getTranslations(this._hass);
 
     const fields = [
@@ -40,52 +41,81 @@ export class IndegoMowerCardEditor extends HTMLElement {
       ["mowed_entity", t(translations, "editor.mowed")],
       ["mowed_size_entity", t(translations, "editor.mowed_size")],
       ["stuck_entity", t(translations, "editor.stuck")],
-      ["alert_entity", t(translations, "editor.errors")]
+      ["alert_entity", t(translations, "editor.errors")],
     ];
 
     this.innerHTML = `
       <div style="padding:16px;">
-        ${fields.map(([key, label]) => `
-          <ha-entity-picker
-            label="${label}"
-            value="${this._config[key] || ""}"
-            config-value="${key}"
-            allow-custom-entity
-            style="display:block; margin-bottom:12px;"
-          ></ha-entity-picker>
-        `).join("")}
+        ${fields
+          .map(
+            ([key, label]) => `
+              <ha-entity-picker
+                label="${label}"
+                config-value="${key}"
+                allow-custom-entity
+                style="display:block; margin-bottom:12px;"
+              ></ha-entity-picker>
+            `
+          )
+          .join("")}
       </div>
     `;
 
     this.querySelectorAll("ha-entity-picker").forEach((picker) => {
+      const key = picker.getAttribute("config-value");
+
       picker.hass = this._hass;
 
+      if (key === "entity") {
+        picker.includeDomains = ["lawn_mower"];
+      }
+      
+      picker.value = this._config[key] || "";
+      
       picker.addEventListener("value-changed", (event) => {
-        const key = picker.getAttribute("config-value");
         const value = event.detail.value;
         const config = { ...this._config };
 
         if (value) {
           config[key] = value;
+
+          if (key === "entity") {
+            Object.assign(config, autoDetectIndegoEntities(this._hass, value));
+          }
         } else {
           delete config[key];
         }
 
         this._config = config;
+        this.updatePickerValues();
 
         this.dispatchEvent(
           new CustomEvent("config-changed", {
             detail: { config },
             bubbles: true,
-            composed: true
+            composed: true,
           })
         );
       });
     });
 
-    this._rendered = true;
-    this._rendering = false;
+    this._initialized = true;
+  }
+
+  updatePickerValues() {
+    if (!this._config) return;
+
+    this.querySelectorAll("ha-entity-picker").forEach((picker) => {
+      const key = picker.getAttribute("config-value");
+      const value = this._config[key] || "";
+
+      if (picker.value !== value) {
+        picker.value = value;
+      }
+    });
   }
 }
 
-customElements.define("indego-mower-card-editor", IndegoMowerCardEditor);
+if (!customElements.get("indego-mower-card-editor")) {
+  customElements.define("indego-mower-card-editor", IndegoMowerCardEditor);
+}
