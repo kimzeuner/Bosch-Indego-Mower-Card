@@ -178,6 +178,15 @@ Tested with:
 
 ---
 
+## Support this project ❤️
+
+If this project saves you time or is useful to you, you can support its development:
+
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.me/KZeuner)
+
+Thank you very much! 😊
+
+---
 ## License
 
 MIT License
