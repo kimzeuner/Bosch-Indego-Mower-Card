@@ -1,15 +1,25 @@
+import { LitElement, html, css } from "lit";
 import {
   DEFAULT_CONFIG,
   batteryFillColor,
   batteryHeaderColor,
   cameraProxyUrl,
   formatValue,
-  getErrorCount
+  getErrorCount,
 } from "./helpers.js";
 import { CARD_STYLES } from "./styles.js";
 import { getTranslations, t } from "./translations.js";
 
-export class IndegoMowerCard extends HTMLElement {
+export class IndegoMowerCard extends LitElement {
+  static properties = {
+    hass: {},
+    config: { state: true },
+  };
+
+  static styles = css`
+    ${CARD_STYLES}
+  `;
+
   static getConfigElement() {
     return document.createElement("indego-mower-card-editor");
   }
@@ -21,7 +31,7 @@ export class IndegoMowerCard extends HTMLElement {
   setConfig(config) {
     this.config = {
       ...DEFAULT_CONFIG,
-      ...config
+      ...config,
     };
   }
 
@@ -29,47 +39,35 @@ export class IndegoMowerCard extends HTMLElement {
     return 6;
   }
 
-  set hass(hass) {
-    this._hass = hass;
-    this.render();
-  }
-
   render() {
-    const hass = this._hass;
-    if (!hass || !this.config) return;
+    if (!this.hass || !this.config) return html``;
 
-    const translations = getTranslations(hass);
-
-    if (!this.content) {
-      const card = document.createElement("ha-card");
-      card.style.padding = "0";
-      this.content = document.createElement("div");
-      card.appendChild(this.content);
-      this.appendChild(card);
-    }
+    const translations = getTranslations(this.hass);
 
     if (!this.config.entity) {
-      this.content.innerHTML = `
-        <div style="padding:16px;">
-          ${t(translations, "select_entity")}
-        </div>
+      return html`
+        <ha-card>
+          <div style="padding:16px;">
+            ${t(translations, "select_entity")}
+          </div>
+        </ha-card>
       `;
-      return;
     }
 
-    const mower = hass.states[this.config.entity];
+    const mower = this.hass.states[this.config.entity];
     const mowerState = mower?.state;
-    const camera = hass.states[this.config.map_entity];
-    const battery = hass.states[this.config.battery_entity];
-    const charging = hass.states[this.config.charging_entity];
-    const stateDetail = hass.states[this.config.state_detail_entity];
-    const mowed = hass.states[this.config.mowed_entity];
-    const mowedSize = hass.states[this.config.mowed_size_entity];
-    const stuck = hass.states[this.config.stuck_entity];
-    const alerts = hass.states[this.config.alert_entity];
+    const camera = this.hass.states[this.config.map_entity];
+    const battery = this.hass.states[this.config.battery_entity];
+    const charging = this.hass.states[this.config.charging_entity];
+    const stateDetail = this.hass.states[this.config.state_detail_entity];
+    const mowed = this.hass.states[this.config.mowed_entity];
+    const mowedSize = this.hass.states[this.config.mowed_size_entity];
+    const stuck = this.hass.states[this.config.stuck_entity];
+    const alerts = this.hass.states[this.config.alert_entity];
 
     const batteryPct = parseInt(battery?.state || 0, 10);
     const imageUrl = cameraProxyUrl(camera);
+
     const stats = this.buildStats({
       translations,
       mowerState,
@@ -78,62 +76,78 @@ export class IndegoMowerCard extends HTMLElement {
       mowed,
       mowedSize,
       stuck,
-      alerts
+      alerts,
     });
 
-    this.content.innerHTML = `
-      <style>${CARD_STYLES}</style>
+    return html`
+      <ha-card>
+        ${mowerState !== "docked" && battery
+          ? html`
+              <div class="header">
+                <div
+                  class="battery"
+                  style="
+                    background: linear-gradient(
+                      90deg,
+                      ${batteryHeaderColor(batteryPct)} 0%,
+                      ${batteryHeaderColor(batteryPct)} ${batteryPct}%,
+                      transparent ${batteryPct}%,
+                      transparent 100%
+                    );
+                  "
+                >
+                  ${t(translations, "battery")}: ${batteryPct}%
+                  ${charging?.state === "on" ? "⚡" : ""}
+                </div>
+              </div>
+            `
+          : ""}
 
-      ${mowerState !== "docked" && battery ? `
-        <div class="header">
-          <div class="battery" style="
-            background: linear-gradient(
-              90deg,
-              ${batteryHeaderColor(batteryPct)} 0%,
-              ${batteryHeaderColor(batteryPct)} ${batteryPct}%,
-              transparent ${batteryPct}%,
-              transparent 100%
-            );
-          ">
-            ${t(translations, "battery")}: ${batteryPct}%
-            ${charging?.state === "on" ? "⚡" : ""}
-          </div>
+        ${imageUrl
+          ? html`<img class="image" src="${imageUrl}" alt="Mower map" />`
+          : html`<div class="status">${t(translations, "no_map")}</div>`}
+
+        <div class="status">
+          ${stateDetail?.state || mower?.state || "-"}
         </div>
-      ` : ""}
 
-      ${imageUrl
-        ? `<img class="image" src="${imageUrl}" alt="Mower map" />`
-        : `<div class="status">${t(translations, "no_map")}</div>`}
+        ${stats.length
+          ? html`
+              <div
+                class="stats"
+                style="grid-template-columns: repeat(${stats.length}, 1fr);"
+              >
+                ${stats}
+              </div>
+            `
+          : ""}
 
-      <div class="status">
-        ${stateDetail?.state || mower?.state || "-"}
-      </div>
-
-      ${stats.length ? `
-        <div class="stats" style="grid-template-columns: repeat(${stats.length}, 1fr);">
-          ${stats.join("")}
+        <div class="actions">
+          ${this.renderActionButton("start", "mdi:play", mowerState === "mowing")}
+          ${this.renderActionButton(
+            "pause",
+            "mdi:pause",
+            mowerState === "paused" || mowerState === "docked"
+          )}
+          ${this.renderActionButton(
+            "dock",
+            "mdi:home-import-outline",
+            mowerState === "docked"
+          )}
         </div>
-      ` : ""}
-
-      <div class="actions">
-        ${this.renderActionButton("start", "mdi:play", mowerState === "mowing")}
-        ${this.renderActionButton("pause", "mdi:pause", mowerState === "paused" || mowerState === "docked")}
-        ${this.renderActionButton("dock", "mdi:home-import-outline", mowerState === "docked")}
-      </div>
+      </ha-card>
     `;
-
-    this.addActionHandlers(hass);
   }
 
-  buildStats({ 
-    translations, 
-    mowerState, 
-    battery, 
-    batteryPct, 
-    mowed, 
-    mowedSize, 
-    stuck, 
-    alerts 
+  buildStats({
+    translations,
+    mowerState,
+    battery,
+    batteryPct,
+    mowed,
+    mowedSize,
+    stuck,
+    alerts,
   }) {
     const stats = [];
 
@@ -141,12 +155,12 @@ export class IndegoMowerCard extends HTMLElement {
       const mowedValue = mowed ? formatValue(mowed, "%") : null;
       const sizeValue = mowedSize ? formatValue(mowedSize, "m²") : null;
 
-      stats.push(`
+      stats.push(html`
         <div class="stat">
           <div class="label">${t(translations, "mowed")}</div>
           <div class="value">
             ${mowedValue || ""}
-            ${mowedValue && sizeValue ? "<br>" : ""}
+            ${mowedValue && sizeValue ? html`<br />` : ""}
             ${sizeValue || ""}
           </div>
         </div>
@@ -156,7 +170,7 @@ export class IndegoMowerCard extends HTMLElement {
     if (alerts) {
       const errorCount = getErrorCount(alerts);
 
-      stats.push(`
+      stats.push(html`
         <div class="stat">
           <div class="label">${t(translations, "errors")}</div>
           <div class="value ${errorCount > 0 ? "warning" : ""}">
@@ -167,11 +181,13 @@ export class IndegoMowerCard extends HTMLElement {
     }
 
     if (stuck && mowerState !== "docked") {
-      stats.push(`
+      stats.push(html`
         <div class="stat">
           <div class="label">${t(translations, "stuck")}</div>
           <div class="value ${stuck.state === "on" ? "warning" : ""}">
-            ${stuck.state === "on" ? t(translations, "yes") : t(translations, "no")}
+            ${stuck.state === "on"
+              ? t(translations, "yes")
+              : t(translations, "no")}
           </div>
         </div>
       `);
@@ -180,16 +196,19 @@ export class IndegoMowerCard extends HTMLElement {
     if (battery && mowerState === "docked") {
       const fillColor = batteryFillColor(batteryPct);
 
-      stats.push(`
-        <div class="stat battery-stat" style="
-          background: linear-gradient(
-            to top,
-            ${fillColor} 0%,
-            ${fillColor} ${batteryPct}%,
-            transparent ${batteryPct}%,
-            transparent 100%
-          );
-        ">
+      stats.push(html`
+        <div
+          class="stat battery-stat"
+          style="
+            background: linear-gradient(
+              to top,
+              ${fillColor} 0%,
+              ${fillColor} ${batteryPct}%,
+              transparent ${batteryPct}%,
+              transparent 100%
+            );
+          "
+        >
           <div class="label">${t(translations, "charge")}</div>
           <div class="value">${formatValue(battery, "%")}</div>
         </div>
@@ -200,35 +219,37 @@ export class IndegoMowerCard extends HTMLElement {
   }
 
   renderActionButton(id, icon, disabled) {
-    return `
-      <button id="${id}" type="button">
+    return html`
+      <button
+        id="${id}"
+        type="button"
+        @click=${() => this.handleAction(id)}
+      >
         <ha-icon
           icon="${icon}"
-          style="color:${disabled ? "var(--disabled-text-color)" : "var(--primary-color)"}">
-        </ha-icon>
+          style="color:${disabled
+            ? "var(--disabled-text-color)"
+            : "var(--primary-color)"}"
+        ></ha-icon>
       </button>
     `;
   }
 
-  addActionHandlers(hass) {
-    this.content.querySelector("#start")?.addEventListener("click", () => {
-      hass.callService("lawn_mower", "start_mowing", {
-        entity_id: this.config.entity
-      });
-    });
+  handleAction(action) {
+    if (!this.hass || !this.config?.entity) return;
 
-    this.content.querySelector("#pause")?.addEventListener("click", () => {
-      hass.callService("lawn_mower", "pause", {
-        entity_id: this.config.entity
-      });
-    });
+    const services = {
+      start: "start_mowing",
+      pause: "pause",
+      dock: "dock",
+    };
 
-    this.content.querySelector("#dock")?.addEventListener("click", () => {
-      hass.callService("lawn_mower", "dock", {
-        entity_id: this.config.entity
-      });
+    this.hass.callService("lawn_mower", services[action], {
+      entity_id: this.config.entity,
     });
   }
 }
 
-customElements.define("indego-mower-card", IndegoMowerCard);
+if (!customElements.get("indego-mower-card")) {
+  customElements.define("indego-mower-card", IndegoMowerCard);
+}
