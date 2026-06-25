@@ -3,7 +3,8 @@ import {
   batteryFillColor,
   batteryHeaderColor,
   cameraProxyUrl,
-  formatValue
+  formatValue,
+  getErrorCount
 } from "./helpers.js";
 import { CARD_STYLES } from "./styles.js";
 import { getTranslations, t } from "./translations.js";
