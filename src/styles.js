@@ -1,4 +1,4 @@
-export const styles = `
+export const CARD_STYLES = `
   .header {
     padding: 12px;
     display: flex;

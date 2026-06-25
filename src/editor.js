@@ -1,17 +1,5 @@
+import { DEFAULT_CONFIG } from "./helpers.js";
 import { getTranslations, t } from "./translations.js";
-
-const DEFAULT_CONFIG = {
-  entity: "",
-  map_entity: "",
-  battery_entity: "",
-  charging_entity: "",
-  state_detail_entity: "",
-  mowed_entity: "",
-  mowed_size_entity: "",
-  stuck_entity: "",
-  alert_entity: "",
-  error_entity: ""
-};
 
 export class IndegoMowerCardEditor extends HTMLElement {
   set hass(hass) {
@@ -41,7 +29,6 @@ export class IndegoMowerCardEditor extends HTMLElement {
     if (!this._config || this._rendering) return;
 
     this._rendering = true;
-
     const translations = getTranslations(this._hass);
 
     const fields = [
@@ -74,10 +61,9 @@ export class IndegoMowerCardEditor extends HTMLElement {
     this.querySelectorAll("ha-entity-picker").forEach((picker) => {
       picker.hass = this._hass;
 
-      picker.addEventListener("value-changed", (ev) => {
+      picker.addEventListener("value-changed", (event) => {
         const key = picker.getAttribute("config-value");
-        const value = ev.detail.value;
-
+        const value = event.detail.value;
         const config = { ...this._config };
 
         if (value) {
