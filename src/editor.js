@@ -59,38 +59,40 @@ export class IndegoMowerCardEditor extends HTMLElement {
 
     this.querySelectorAll("ha-entity-picker").forEach((picker) => {
       picker.hass = this._hass;
-
+    
       picker.addEventListener("value-changed", (event) => {
         const key = picker.getAttribute("config-value");
         const value = event.detail.value;
         const config = { ...this._config };
-
+    
         if (value) {
           config[key] = value;
-        
+    
           if (key === "entity") {
-            Object.assign(
-              config,
-              autoDetectIndegoEntities(this._hass, value)
-            );
+            Object.assign(config, autoDetectIndegoEntities(this._hass, value));
           }
         } else {
           delete config[key];
         }
-
+    
         this._config = config;
-        
+    
         this.dispatchEvent(
           new CustomEvent("config-changed", {
             detail: { config },
             bubbles: true,
-            composed: true
+            composed: true,
           })
         );
-        
+    
         this._rendered = false;
         this.render();
-  }
-}
-
-customElements.define("indego-mower-card-editor", IndegoMowerCardEditor);
+      });
+    });
+    
+    this._rendered = true;
+    this._rendering = false;
+      }
+    }
+    
+    customElements.define("indego-mower-card-editor", IndegoMowerCardEditor);
