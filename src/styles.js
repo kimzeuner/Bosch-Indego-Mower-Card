@@ -1,4 +1,6 @@
-export const CARD_STYLES = `
+import { css } from "lit";
+
+export const CARD_STYLES = css`
   .header {
     padding: 12px;
     display: flex;
