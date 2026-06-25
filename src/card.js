@@ -78,7 +78,7 @@ export class IndegoMowerCard extends HTMLElement {
       mowed,
       mowedSize,
       stuck,
-      errors
+      alerts
     });
 
     this.content.innerHTML = `
@@ -125,7 +125,16 @@ export class IndegoMowerCard extends HTMLElement {
     this.addActionHandlers(hass);
   }
 
-  buildStats({ translations, mowerState, battery, batteryPct, mowed, mowedSize, stuck, errors }) {
+  buildStats({ 
+    translations, 
+    mowerState, 
+    battery, 
+    batteryPct, 
+    mowed, 
+    mowedSize, 
+    stuck, 
+    alerts 
+  }) {
     const stats = [];
 
     if (mowed || mowedSize) {
@@ -146,7 +155,7 @@ export class IndegoMowerCard extends HTMLElement {
 
     if (alerts) {
       const errorCount = getErrorCount(alerts);
-    
+
       stats.push(`
         <div class="stat">
           <div class="label">${t(translations, "errors")}</div>
