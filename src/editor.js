@@ -90,8 +90,9 @@ export class IndegoMowerCardEditor extends HTMLElement {
       });
     });
     
-    this._rendered = true;
-    this._rendering = false;
+      this._rendered = false;
+      this._rendering = false;
+      this.render();
       }
     }
     
