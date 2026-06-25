@@ -65,8 +65,13 @@ export class IndegoMowerCardEditor extends HTMLElement {
       const key = picker.getAttribute("config-value");
 
       picker.hass = this._hass;
-      picker.value = this._config[key] || "";
 
+      if (key === "entity") {
+        picker.includeDomains = ["lawn_mower"];
+      }
+      
+      picker.value = this._config[key] || "";
+      
       picker.addEventListener("value-changed", (event) => {
         const value = event.detail.value;
         const config = { ...this._config };
