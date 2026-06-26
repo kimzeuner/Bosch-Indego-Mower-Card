@@ -28,5 +28,10 @@
     "theme_warning_color": "Warning color",
     "theme_error_color": "Error color",
     "theme_button_background": "Button background"
+  },
+  "actions": {
+    "start": "Start",
+    "pause": "Pause",
+    "dock": "Andocken"
   }
 }
