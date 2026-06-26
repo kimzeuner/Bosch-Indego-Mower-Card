@@ -14,14 +14,17 @@ const ACTIONS = {
   start: {
     service: "start_mowing",
     icon: "mdi:play",
+    label: "start",
   },
   pause: {
     service: "pause",
     icon: "mdi:pause",
+    label: "pause",
   },
   dock: {
     service: "dock",
     icon: "mdi:home-import-outline",
+    label: "dock",
   },
 };
 
@@ -367,17 +370,32 @@ export class IndegoMowerCard extends LitElement {
       return html``;
     }
   
+    const translations = getTranslations(this.hass);
+    const layout = this.config.action_layout || "icon";
+    const icon = html`
+      <ha-icon
+        icon="${action.icon}"
+        style="color:${disabled
+          ? "var(--disabled-text-color)"
+          : "var(--indego-primary-color, var(--primary-color))"}"
+      ></ha-icon>
+    `;
+    const text = html`
+      <span class="action-label">
+        ${t(translations, `actions.${action.label}`)}
+      </span>
+    `;
+  
     return html`
       <button
         type="button"
+        class="action-button ${layout}"
         @click=${() => this.handleAction(actionId)}
       >
-        <ha-icon
-          icon="${action.icon}"
-          style="color:${disabled
-            ? "var(--disabled-text-color)"
-            : "var(--indego-primary-color, var(--primary-color))"}"
-        ></ha-icon>
+        ${layout === "text" ? text : ""}
+        ${layout === "icon" ? icon : ""}
+        ${layout === "icon_text" ? html`${icon}${text}` : ""}
+        ${layout === "text_icon" ? html`${text}${icon}` : ""}
       </button>
     `;
   }
