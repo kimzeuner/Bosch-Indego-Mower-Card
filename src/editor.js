@@ -52,6 +52,13 @@ export class IndegoMowerCardEditor extends HTMLElement {
       ["theme_button_background", t(translations, "editor.theme_button_background")],
     ];
 
+    const actionLayoutOptions = [
+      ["icon", t(translations, "editor.action_layout_icon")],
+      ["text", t(translations, "editor.action_layout_text")],
+      ["icon_text", t(translations, "editor.action_layout_icon_text")],
+      ["text_icon", t(translations, "editor.action_layout_text_icon")],
+    ];
+
     this.innerHTML = `
       <div style="padding:16px;">
         ${fields
@@ -127,6 +134,35 @@ export class IndegoMowerCardEditor extends HTMLElement {
             )
             .join("")}
         </div>
+
+        <div style="margin-top:20px; margin-bottom:8px; font-size:16px; font-weight:500;">
+          ${t(translations, "editor.action_layout")}
+        </div>
+        
+        <select
+          config-value="action_layout"
+          style="
+            width:100%;
+            box-sizing:border-box;
+            padding:8px;
+            border:1px solid var(--divider-color);
+            border-radius:4px;
+            background:var(--card-background-color);
+            color:var(--primary-text-color);
+          "
+        >
+          ${actionLayoutOptions
+            .map(
+              ([value, label]) => `
+                <option value="${value}" ${
+                  (this._config.action_layout || "icon") === value ? "selected" : ""
+                }>
+                  ${label}
+                </option>
+              `
+            )
+            .join("")}
+        </select>
       </div>
     `;
 
@@ -198,6 +234,27 @@ export class IndegoMowerCardEditor extends HTMLElement {
         );
       });
     });
+
+    const actionLayoutSelect = this.querySelector('select[config-value="action_layout"]');
+
+    if (actionLayoutSelect) {
+      actionLayoutSelect.addEventListener("change", (event) => {
+        const config = {
+          ...this._config,
+          action_layout: event.target.value || "icon",
+        };
+    
+        this._config = config;
+    
+        this.dispatchEvent(
+          new CustomEvent("config-changed", {
+            detail: { config },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      });
+    }
     
     this.querySelectorAll("ha-switch").forEach((toggle) => {
       const key = toggle.getAttribute("config-value");
@@ -250,6 +307,11 @@ export class IndegoMowerCardEditor extends HTMLElement {
         field.value = value;
       }
     });
+    const actionLayoutSelect = this.querySelector('select[config-value="action_layout"]');
+    
+    if (actionLayoutSelect) {
+      actionLayoutSelect.value = this._config.action_layout || "icon";
+    }
     
   }
 }

@@ -84,4 +84,22 @@ export const CARD_STYLES = `
   .clickable {
     cursor: pointer;
   }
+
+  .action-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .action-button.text,
+  .action-button.icon_text,
+  .action-button.text_icon {
+    min-height: 44px;
+  }
+  
+  .action-label {
+    font-size: 14px;
+    font-weight: 500;
+  }
 `;
