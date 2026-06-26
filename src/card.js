@@ -9,7 +9,6 @@ import {
 } from "./helpers.js";
 import { CARD_STYLES } from "./styles.js";
 import { getTranslations, t } from "./translations.js";
-import { handleAction  } from "custom-card-helpers";
 
 const ACTIONS = {
   start: {
@@ -207,21 +206,43 @@ export class IndegoMowerCard extends LitElement {
       </div>
     `;
   }
+
+  fireHassAction(entityId, actionConfig, action) {
+    this.dispatchEvent(
+      new CustomEvent("hass-action", {
+        detail: {
+          config: {
+            entity: entityId,
+            tap_action: action === "tap" ? actionConfig : undefined,
+            double_tap_action: action === "double_tap" ? actionConfig : undefined,
+            hold_action: action === "hold" ? actionConfig : undefined,
+          },
+          action,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
   
   renderMap({ translations, imageUrl, entityId }) {
-    return imageUrl
-      ? html`
-          <img
-            class="image"
-            src="${imageUrl}"
-            alt="Mower map"
-            @click=${() =>
-              this.handleElementAction("tap", entityId, {
-                tap: this.config.map_tap_action,
-              })}
-          />
-        `
-      : html`<div class="status">${t(translations, "no_map")}</div>`;
+    if (!imageUrl) {
+      return html`<div class="status">${t(translations, "no_map")}</div>`;
+    }
+  
+    return html`
+      <img
+        class="image"
+        src="${imageUrl}"
+        alt="Mower map"
+        @click=${() =>
+          this.fireHassAction(
+            entityId,
+            this.config.map_tap_action || { action: "more-info" },
+            "tap"
+          )}
+      />
+    `;
   }
   
   renderStatus({ mower, stateDetail, entityId }) {
@@ -365,14 +386,14 @@ export class IndegoMowerCard extends LitElement {
   }
 
   handleElementAction(action, entityId, actionConfigs) {
-    const actionConfig = actionConfigs[action];
-  
     handleAction(
       this,
       this.hass,
       {
         entity: entityId,
-        ...actionConfig,
+        tap_action: actionConfigs.tap,
+        double_tap_action: actionConfigs.double_tap,
+        hold_action: actionConfigs.hold,
       },
       action
     );
