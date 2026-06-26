@@ -53,7 +53,30 @@ export class IndegoMowerCard extends LitElement {
   getCardSize() {
     return 6;
   }
-
+  
+  getColors() {
+    return {
+      primary:
+        this.config.theme_primary_color || "var(--primary-color)",
+  
+      border:
+        this.config.theme_border_color ||
+        "rgba(0,150,136,0.2)",
+  
+      warning:
+        this.config.theme_warning_color ||
+        "var(--warning-color)",
+  
+      error:
+        this.config.theme_error_color ||
+        "var(--error-color)",
+  
+      buttonBackground:
+        this.config.theme_button_background ||
+        "var(--card-background-color)",
+    };
+  }
+  
   render() {
     if (!this.hass || !this.config) return html``;
 
@@ -103,8 +126,19 @@ export class IndegoMowerCard extends LitElement {
       alerts,
     };
 
+    const colors = this.getColors();
+        
     return html`
-      <ha-card>
+          <ha-card
+            style="
+              --indego-primary-color: ${colors.primary};
+              --indego-border-color: ${colors.border};
+              --indego-warning-color: ${colors.warning};
+              --indego-error-color: ${colors.error};
+              --indego-button-background: ${colors.buttonBackground};
+            "
+          >
+          
         ${this.config.show_battery_header !== false
           ? this.renderBatteryHeader({
               translations,
@@ -296,7 +330,7 @@ export class IndegoMowerCard extends LitElement {
           icon="${action.icon}"
           style="color:${disabled
             ? "var(--disabled-text-color)"
-            : "var(--primary-color)"}"
+            : "var(--indego-primary-color, var(--primary-color))"}"
         ></ha-icon>
       </button>
     `;
