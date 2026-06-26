@@ -11,9 +11,12 @@
   "editor": {
     "mower": "Mower",
     "map": "Map",
+    "show_map": "Show",
     "battery": "Battery",
+    "show_battery_header": "Show",
     "charging": "Charging",
     "state_detail": "Status detail",
+    "show_status": "Show",
     "mowed": "Mowed",
     "mowed_size": "Mowed area",
     "stuck": "Stuck",
