@@ -44,6 +44,14 @@ export class IndegoMowerCardEditor extends HTMLElement {
       ["alert_entity", t(translations, "editor.errors")],
     ];
 
+    const colorFields = [
+      ["theme_primary_color", t(translations, "editor.theme_primary_color")],
+      ["theme_border_color", t(translations, "editor.theme_border_color")],
+      ["theme_warning_color", t(translations, "editor.theme_warning_color")],
+      ["theme_error_color", t(translations, "editor.theme_error_color")],
+      ["theme_button_background", t(translations, "editor.theme_button_background")],
+    ];
+
     this.innerHTML = `
       <div style="padding:16px;">
         ${fields
@@ -83,6 +91,29 @@ export class IndegoMowerCardEditor extends HTMLElement {
             `
           )
           .join("")}
+
+        <div style="margin-top:20px; margin-bottom:8px; font-size:16px; font-weight:500;">
+          ${t(translations, "editor.colors")}
+        </div>
+        
+        <div style="
+          display:grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap:12px;
+        ">
+          ${colorFields
+            .map(
+              ([key, label]) => `
+                <ha-textfield
+                  label="${label}"
+                  config-value="${key}"
+                  value="${this._config[key] || ""}"
+                  style="width:100%;"
+                ></ha-textfield>
+              `
+            )
+            .join("")}
+        </div>
       </div>
     `;
 
@@ -130,6 +161,31 @@ export class IndegoMowerCardEditor extends HTMLElement {
       });
     });
 
+    this.querySelectorAll("ha-textfield").forEach((field) => {
+      const key = field.getAttribute("config-value");
+    
+      field.addEventListener("change", (event) => {
+        const value = event.target.value?.trim();
+        const config = { ...this._config };
+    
+        if (value) {
+          config[key] = value;
+        } else {
+          delete config[key];
+        }
+    
+        this._config = config;
+    
+        this.dispatchEvent(
+          new CustomEvent("config-changed", {
+            detail: { config },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      });
+    });
+    
     this.querySelectorAll("ha-switch").forEach((toggle) => {
       const key = toggle.getAttribute("config-value");
 
@@ -172,6 +228,16 @@ export class IndegoMowerCardEditor extends HTMLElement {
       const key = toggle.getAttribute("config-value");
       toggle.checked = this._config[key] !== false;
     });
+
+    this.querySelectorAll("ha-textfield").forEach((field) => {
+      const key = field.getAttribute("config-value");
+      const value = this._config[key] || "";
+    
+      if (field.value !== value) {
+        field.value = value;
+      }
+    });
+    
   }
 }
 
