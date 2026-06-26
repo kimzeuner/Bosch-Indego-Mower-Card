@@ -1,15 +1,40 @@
+import { LitElement, html, css, unsafeCSS } from "lit";
 import {
   DEFAULT_CONFIG,
   batteryFillColor,
   batteryHeaderColor,
   cameraProxyUrl,
   formatValue,
-  getErrorCount
+  getErrorCount,
 } from "./helpers.js";
 import { CARD_STYLES } from "./styles.js";
 import { getTranslations, t } from "./translations.js";
 
-export class IndegoMowerCard extends HTMLElement {
+const ACTIONS = {
+  start: {
+    service: "start_mowing",
+    icon: "mdi:play",
+  },
+  pause: {
+    service: "pause",
+    icon: "mdi:pause",
+  },
+  dock: {
+    service: "dock",
+    icon: "mdi:home-import-outline",
+  },
+};
+
+export class IndegoMowerCard extends LitElement {
+  static properties = {
+    hass: {},
+    config: { state: true },
+  };
+
+  static styles = css`
+    ${unsafeCSS(CARD_STYLES)}
+  `;
+
   static getConfigElement() {
     return document.createElement("indego-mower-card-editor");
   }
@@ -21,7 +46,7 @@ export class IndegoMowerCard extends HTMLElement {
   setConfig(config) {
     this.config = {
       ...DEFAULT_CONFIG,
-      ...config
+      ...config,
     };
   }
 
@@ -29,48 +54,45 @@ export class IndegoMowerCard extends HTMLElement {
     return 6;
   }
 
-  set hass(hass) {
-    this._hass = hass;
-    this.render();
-  }
-
   render() {
-    const hass = this._hass;
-    if (!hass || !this.config) return;
+    if (!this.hass || !this.config) return html``;
 
-    const translations = getTranslations(hass);
+    const translations = getTranslations(this.hass);
 
-    if (!this.content) {
-      const card = document.createElement("ha-card");
-      card.style.padding = "0";
-      this.content = document.createElement("div");
-      card.appendChild(this.content);
-      this.appendChild(card);
-    }
+    const previewEntity =
+      this.config.entity ||
+      Object.keys(this.hass.states).find((entityId) =>
+        entityId.startsWith("lawn_mower.")
+      );
+    
+    const mower = previewEntity
+      ? this.hass.states[previewEntity]
+      : undefined;
 
-    if (!this.config.entity) {
-      this.content.innerHTML = `
-        <div style="padding:16px;">
-          ${t(translations, "select_entity")}
-        </div>
+    if (!mower) {
+      return html`
+        <ha-card>
+          <div class="status">
+            ${t(translations, "select_entity")}
+          </div>
+        </ha-card>
       `;
-      return;
     }
-
-    const mower = hass.states[this.config.entity];
+    
     const mowerState = mower?.state;
-    const camera = hass.states[this.config.map_entity];
-    const battery = hass.states[this.config.battery_entity];
-    const charging = hass.states[this.config.charging_entity];
-    const stateDetail = hass.states[this.config.state_detail_entity];
-    const mowed = hass.states[this.config.mowed_entity];
-    const mowedSize = hass.states[this.config.mowed_size_entity];
-    const stuck = hass.states[this.config.stuck_entity];
-    const alerts = hass.states[this.config.alert_entity];
+    const camera = this.hass.states[this.config.map_entity];
+    const battery = this.hass.states[this.config.battery_entity];
+    const charging = this.hass.states[this.config.charging_entity];
+    const stateDetail = this.hass.states[this.config.state_detail_entity];
+    const mowed = this.hass.states[this.config.mowed_entity];
+    const mowedSize = this.hass.states[this.config.mowed_size_entity];
+    const stuck = this.hass.states[this.config.stuck_entity];
+    const alerts = this.hass.states[this.config.alert_entity];
 
     const batteryPct = parseInt(battery?.state || 0, 10);
     const imageUrl = cameraProxyUrl(camera);
-    const stats = this.buildStats({
+
+    const stats = {
       translations,
       mowerState,
       battery,
@@ -78,15 +100,40 @@ export class IndegoMowerCard extends HTMLElement {
       mowed,
       mowedSize,
       stuck,
-      alerts
-    });
+      alerts,
+    };
 
-    this.content.innerHTML = `
-      <style>${CARD_STYLES}</style>
+    return html`
+      <ha-card>
+        ${this.renderBatteryHeader({
+          translations,
+          mowerState,
+          battery,
+          batteryPct,
+          charging,
+        })}
+        
+        ${this.renderMap({ translations, imageUrl })}
+        
+        ${this.renderStatus({ mower, stateDetail })}
+        
+        ${this.renderStats(stats)}
+        
+        ${this.renderActions(mowerState)}
+      </ha-card>
+    `;
+  }
 
-      ${mowerState !== "docked" && battery ? `
-        <div class="header">
-          <div class="battery" style="
+  renderBatteryHeader({ translations, mowerState, battery, batteryPct, charging }) {
+    if (mowerState === "docked" || !battery) {
+      return html``;
+    }
+  
+    return html`
+      <div class="header">
+        <div
+          class="battery"
+          style="
             background: linear-gradient(
               90deg,
               ${batteryHeaderColor(batteryPct)} 0%,
@@ -94,94 +141,124 @@ export class IndegoMowerCard extends HTMLElement {
               transparent ${batteryPct}%,
               transparent 100%
             );
-          ">
-            ${t(translations, "battery")}: ${batteryPct}%
-            ${charging?.state === "on" ? "⚡" : ""}
-          </div>
+          "
+        >
+          ${t(translations, "battery")}: ${batteryPct}%
+          ${charging?.state === "on" ? "⚡" : ""}
         </div>
-      ` : ""}
-
-      ${imageUrl
-        ? `<img class="image" src="${imageUrl}" alt="Mower map" />`
-        : `<div class="status">${t(translations, "no_map")}</div>`}
-
+      </div>
+    `;
+  }
+  
+  renderMap({ translations, imageUrl }) {
+    return imageUrl
+      ? html`<img class="image" src="${imageUrl}" alt="Mower map" />`
+      : html`<div class="status">${t(translations, "no_map")}</div>`;
+  }
+  
+  renderStatus({ mower, stateDetail }) {
+    return html`
       <div class="status">
         ${stateDetail?.state || mower?.state || "-"}
       </div>
-
-      ${stats.length ? `
-        <div class="stats" style="grid-template-columns: repeat(${stats.length}, 1fr);">
-          ${stats.join("")}
-        </div>
-      ` : ""}
-
+    `;
+  }
+  
+  renderActions(mowerState) {
+    return html`
       <div class="actions">
-        ${this.renderActionButton("start", "mdi:play", mowerState === "mowing")}
-        ${this.renderActionButton("pause", "mdi:pause", mowerState === "paused" || mowerState === "docked")}
-        ${this.renderActionButton("dock", "mdi:home-import-outline", mowerState === "docked")}
+        ${this.renderActionButton("start", mowerState === "mowing")}
+        ${this.renderActionButton(
+          "pause",
+          mowerState === "paused" || mowerState === "docked"
+        )}
+        ${this.renderActionButton("dock", mowerState === "docked")}
       </div>
     `;
-
-    this.addActionHandlers(hass);
   }
 
-  buildStats({ 
-    translations, 
-    mowerState, 
-    battery, 
-    batteryPct, 
-    mowed, 
-    mowedSize, 
-    stuck, 
-    alerts 
-  }) {
+  renderStats(data) {
     const stats = [];
-
-    if (mowed || mowedSize) {
-      const mowedValue = mowed ? formatValue(mowed, "%") : null;
-      const sizeValue = mowedSize ? formatValue(mowedSize, "m²") : null;
-
-      stats.push(`
-        <div class="stat">
-          <div class="label">${t(translations, "mowed")}</div>
-          <div class="value">
-            ${mowedValue || ""}
-            ${mowedValue && sizeValue ? "<br>" : ""}
-            ${sizeValue || ""}
-          </div>
-        </div>
-      `);
+  
+    if (data.mowed || data.mowedSize) {
+      stats.push(this.renderMowedStat(data));
     }
-
-    if (alerts) {
-      const errorCount = getErrorCount(alerts);
-
-      stats.push(`
-        <div class="stat">
-          <div class="label">${t(translations, "errors")}</div>
-          <div class="value ${errorCount > 0 ? "warning" : ""}">
-            ${errorCount}
-          </div>
-        </div>
-      `);
+  
+    if (data.alerts) {
+      stats.push(this.renderAlertStat(data));
     }
-
-    if (stuck && mowerState !== "docked") {
-      stats.push(`
-        <div class="stat">
-          <div class="label">${t(translations, "stuck")}</div>
-          <div class="value ${stuck.state === "on" ? "warning" : ""}">
-            ${stuck.state === "on" ? t(translations, "yes") : t(translations, "no")}
-          </div>
-        </div>
-      `);
+  
+    if (data.stuck && data.mowerState !== "docked") {
+      stats.push(this.renderStuckStat(data));
     }
-
-    if (battery && mowerState === "docked") {
-      const fillColor = batteryFillColor(batteryPct);
-
-      stats.push(`
-        <div class="stat battery-stat" style="
+  
+    if (data.battery && data.mowerState === "docked") {
+      stats.push(this.renderBatteryStat(data));
+    }
+  
+    if (!stats.length) {
+      return html``;
+    }
+  
+    return html`
+      <div
+        class="stats"
+        style="grid-template-columns: repeat(${stats.length}, 1fr);"
+      >
+        ${stats}
+      </div>
+    `;
+  }
+  
+  renderMowedStat({ translations, mowed, mowedSize }) {
+    const mowedValue = mowed ? formatValue(mowed, "%") : null;
+    const sizeValue = mowedSize ? formatValue(mowedSize, "m²") : null;
+  
+    return html`
+      <div class="stat">
+        <div class="label">${t(translations, "mowed")}</div>
+        <div class="value">
+          ${mowedValue || ""}
+          ${mowedValue && sizeValue ? html`<br />` : ""}
+          ${sizeValue || ""}
+        </div>
+      </div>
+    `;
+  }
+  
+  renderAlertStat({ translations, alerts }) {
+    const errorCount = getErrorCount(alerts);
+  
+    return html`
+      <div class="stat">
+        <div class="label">${t(translations, "errors")}</div>
+        <div class="value ${errorCount > 0 ? "warning" : ""}">
+          ${errorCount}
+        </div>
+      </div>
+    `;
+  }
+  
+  renderStuckStat({ translations, stuck }) {
+    return html`
+      <div class="stat">
+        <div class="label">${t(translations, "stuck")}</div>
+        <div class="value ${stuck.state === "on" ? "warning" : ""}">
+          ${stuck.state === "on"
+            ? t(translations, "yes")
+            : t(translations, "no")}
+        </div>
+      </div>
+    `;
+  }
+  
+  renderBatteryStat({ translations, battery, batteryPct }) {
+    const fillColor = batteryFillColor(batteryPct);
+  
+    return html`
+      <div
+        class="stat battery-stat"
+        style="
           background: linear-gradient(
             to top,
             ${fillColor} 0%,
@@ -189,46 +266,49 @@ export class IndegoMowerCard extends HTMLElement {
             transparent ${batteryPct}%,
             transparent 100%
           );
-        ">
-          <div class="label">${t(translations, "charge")}</div>
-          <div class="value">${formatValue(battery, "%")}</div>
-        </div>
-      `);
-    }
-
-    return stats;
+        "
+      >
+        <div class="label">${t(translations, "charge")}</div>
+        <div class="value">${formatValue(battery, "%")}</div>
+      </div>
+    `;
   }
 
-  renderActionButton(id, icon, disabled) {
-    return `
-      <button id="${id}" type="button">
+  renderActionButton(actionId, disabled) {
+    const action = ACTIONS[actionId];
+  
+    if (!action) {
+      return html``;
+    }
+  
+    return html`
+      <button
+        type="button"
+        @click=${() => this.handleAction(actionId)}
+      >
         <ha-icon
-          icon="${icon}"
-          style="color:${disabled ? "var(--disabled-text-color)" : "var(--primary-color)"}">
-        </ha-icon>
+          icon="${action.icon}"
+          style="color:${disabled
+            ? "var(--disabled-text-color)"
+            : "var(--primary-color)"}"
+        ></ha-icon>
       </button>
     `;
   }
 
-  addActionHandlers(hass) {
-    this.content.querySelector("#start")?.addEventListener("click", () => {
-      hass.callService("lawn_mower", "start_mowing", {
-        entity_id: this.config.entity
-      });
-    });
-
-    this.content.querySelector("#pause")?.addEventListener("click", () => {
-      hass.callService("lawn_mower", "pause", {
-        entity_id: this.config.entity
-      });
-    });
-
-    this.content.querySelector("#dock")?.addEventListener("click", () => {
-      hass.callService("lawn_mower", "dock", {
-        entity_id: this.config.entity
-      });
+  handleAction(actionId) {
+    if (!this.hass || !this.config?.entity) return;
+  
+    const action = ACTIONS[actionId];
+  
+    if (!action) return;
+  
+    this.hass.callService("lawn_mower", action.service, {
+      entity_id: this.config.entity,
     });
   }
 }
 
-customElements.define("indego-mower-card", IndegoMowerCard);
+if (!customElements.get("indego-mower-card")) {
+  customElements.define("indego-mower-card", IndegoMowerCard);
+}
