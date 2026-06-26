@@ -9,7 +9,7 @@ import {
 } from "./helpers.js";
 import { CARD_STYLES } from "./styles.js";
 import { getTranslations, t } from "./translations.js";
-import { actionHandler, handleAction  } from "custom-card-helpers";
+import { handleAction  } from "custom-card-helpers";
 
 const ACTIONS = {
   start: {
@@ -215,15 +215,9 @@ export class IndegoMowerCard extends LitElement {
             class="image"
             src="${imageUrl}"
             alt="Mower map"
-            .actionHandler=${actionHandler({
-              hasHold: true,
-              hasDoubleClick: true,
-            })}
-            @action=${(event) =>
-              this.handleElementAction(event, entityId, {
+            @click=${() =>
+              this.handleElementAction("tap", entityId, {
                 tap: this.config.map_tap_action,
-                double_tap: this.config.map_double_tap_action,
-                hold: this.config.map_hold_action,
               })}
           />
         `
@@ -234,11 +228,7 @@ export class IndegoMowerCard extends LitElement {
     return html`
       <div
         class="status clickable"
-        .actionHandler=${actionHandler({
-          hasHold: true,
-          hasDoubleClick: true,
-        })}
-        @action=${(event) =>
+        @click=${(event) =>
           this.handleElementAction(event, entityId, {
             tap: this.config.status_tap_action,
             double_tap: this.config.status_double_tap_action,
@@ -374,15 +364,8 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
 
-  handleElementAction(event, entityId, actionConfigs) {
-    const action = event.detail.action;
-  
-    const actionConfig =
-      action === "double_tap"
-        ? actionConfigs.double_tap
-        : action === "hold"
-          ? actionConfigs.hold
-          : actionConfigs.tap;
+  handleElementAction(action, entityId, actionConfigs) {
+    const actionConfig = actionConfigs[action];
   
     handleAction(
       this,
