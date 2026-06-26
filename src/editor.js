@@ -58,8 +58,38 @@ export class IndegoMowerCardEditor extends HTMLElement {
             `
           )
           .join("")}
+
+        <ha-formfield label="${t(translations, "editor.show_map")}">
+          <ha-switch
+            config-value="show_map"
+            style="margin-bottom:12px;"
+          ></ha-switch>
+        </ha-formfield>
       </div>
     `;
+
+    const showMapSwitch = this.querySelector('ha-switch[config-value="show_map"]');
+    
+    if (showMapSwitch) {
+      showMapSwitch.checked = this._config.show_map !== false;
+    
+      showMapSwitch.addEventListener("change", (event) => {
+        const config = {
+          ...this._config,
+          show_map: event.target.checked,
+        };
+    
+        this._config = config;
+    
+        this.dispatchEvent(
+          new CustomEvent("config-changed", {
+            detail: { config },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      });
+    }
 
     this.querySelectorAll("ha-entity-picker").forEach((picker) => {
       const key = picker.getAttribute("config-value");
@@ -120,6 +150,11 @@ export class IndegoMowerCardEditor extends HTMLElement {
         picker.value = value;
       }
     });
+    const showMapSwitch = this.querySelector('ha-switch[config-value="show_map"]');
+    
+    if (showMapSwitch) {
+      showMapSwitch.checked = this._config.show_map !== false;
+    }
   }
 }
 
