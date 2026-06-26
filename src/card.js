@@ -113,7 +113,9 @@ export class IndegoMowerCard extends LitElement {
           charging,
         })}
         
-        ${this.renderMap({ translations, imageUrl })}
+        ${this.config.show_map !== false
+          ? this.renderMap({ translations, imageUrl })
+          : html``}
         
         ${this.renderStatus({ mower, stateDetail })}
         
