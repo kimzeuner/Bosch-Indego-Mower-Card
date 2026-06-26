@@ -285,15 +285,21 @@ export class IndegoMowerCard extends LitElement {
   }
   
   renderStatus({ mower, stateDetail, entityId }) {
+    const actionConfigs = {
+      tap: this.config.status_tap_action,
+      double_tap: this.config.status_double_tap_action,
+      hold: this.config.status_hold_action,
+    };
+  
     return html`
       <div
         class="status clickable"
-        @click=${(event) =>
-          this.fireHassAction(event, entityId, {
-            tap: this.config.status_tap_action,
-            double_tap: this.config.status_double_tap_action,
-            hold: this.config.status_hold_action,
-          })}
+        @click=${() => this.handleTap(entityId, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
       >
         ${stateDetail?.state || mower?.state || "-"}
       </div>
@@ -349,12 +355,21 @@ export class IndegoMowerCard extends LitElement {
   renderMowedStat({ translations, mowed, mowedSize, entities }) {
     const mowedValue = mowed ? formatValue(mowed, "%") : null;
     const sizeValue = mowedSize ? formatValue(mowedSize, "m²") : null;
-  
+    const actionConfigs = {
+      tap: this.config.mowed_tap_action,
+      double_tap: this.config.mowed_double_tap_action,
+      hold: this.config.mowed_hold_action,
+    };
+    
     return html`
       <div
         class="stat clickable"
-        @click=${() =>
-          this.fireHassAction(this.config.mowed_tap_action, "tap", entities.mowed)}
+        @click=${() => this.handleTap(entities.mowed, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entities.mowed, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entities.mowed, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
       >
         <div class="label">${t(translations, "mowed")}</div>
         <div class="value">
@@ -369,11 +384,21 @@ export class IndegoMowerCard extends LitElement {
   renderAlertStat({ translations, alerts, entities }) {
     const errorCount = getErrorCount(alerts);
   
+    const actionConfigs = {
+      tap: this.config.alerts_tap_action,
+      double_tap: this.config.alerts_double_tap_action,
+      hold: this.config.alerts_hold_action,
+    };
+  
     return html`
       <div
         class="stat clickable"
-        @click=${() =>
-          this.fireHassAction(this.config.alerts_tap_action, "tap", entities.alerts)}
+        @click=${() => this.handleTap(entities.alerts, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entities.alerts, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entities.alerts, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
       >
         <div class="label">${t(translations, "errors")}</div>
         <div class="value ${errorCount > 0 ? "warning" : ""}">
@@ -384,11 +409,21 @@ export class IndegoMowerCard extends LitElement {
   }
   
   renderStuckStat({ translations, stuck, entities }) {
+    const actionConfigs = {
+      tap: this.config.stuck_tap_action,
+      double_tap: this.config.stuck_double_tap_action,
+      hold: this.config.stuck_hold_action,
+    };
+  
     return html`
       <div
         class="stat clickable"
-        @click=${() =>
-          this.fireHassAction(this.config.stuck_tap_action, "tap", entities.stuck)}
+        @click=${() => this.handleTap(entities.stuck, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entities.stuck, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entities.stuck, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
       >
         <div class="label">${t(translations, "stuck")}</div>
         <div class="value ${stuck.state === "on" ? "warning" : ""}">
@@ -403,11 +438,21 @@ export class IndegoMowerCard extends LitElement {
   renderBatteryStat({ translations, battery, batteryPct, entities }) {
     const fillColor = batteryFillColor(batteryPct);
   
+    const actionConfigs = {
+      tap: this.config.battery_tap_action,
+      double_tap: this.config.battery_double_tap_action,
+      hold: this.config.battery_hold_action,
+    };
+  
     return html`
       <div
         class="stat battery-stat clickable"
-        @click=${() =>
-          this.fireHassAction(this.config.battery_tap_action, "tap", entities.battery)}
+        @click=${() => this.handleTap(entities.battery, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entities.battery, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entities.battery, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
         style="
           background: linear-gradient(
             to top,
