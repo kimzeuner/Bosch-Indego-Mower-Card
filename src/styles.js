@@ -16,6 +16,7 @@ export const CARD_STYLES = `
   .image {
     width: 100%;
     display: block;
+    cursor: pointer;
   }
 
   .status {
@@ -78,5 +79,9 @@ export const CARD_STYLES = `
 
   button ha-icon {
     --mdc-icon-size: 28px;
+  }
+
+  .clickable {
+    cursor: pointer;
   }
 `;
