@@ -8,10 +8,10 @@
   "no": "No",
   "no_map": "No map available",
   "select_entity": "Please select a mower entity in the card configuration.",
-  "show_map": "Show map",
   "editor": {
     "mower": "Mower",
     "map": "Map",
+    "show_map": "Show map",
     "battery": "Battery",
     "charging": "Charging",
     "state_detail": "Status detail",
