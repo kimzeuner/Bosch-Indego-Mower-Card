@@ -207,15 +207,15 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
 
-  fireHassAction(entityId, actionConfig, action) {
+  fireHassAction(entityId, actionConfigs, action) {
     this.dispatchEvent(
       new CustomEvent("hass-action", {
         detail: {
           config: {
             entity: entityId,
-            tap_action: action === "tap" ? actionConfig : undefined,
-            double_tap_action: action === "double_tap" ? actionConfig : undefined,
-            hold_action: action === "hold" ? actionConfig : undefined,
+            tap_action: actionConfigs.tap || { action: "more-info" },
+            double_tap_action: actionConfigs.double_tap || { action: "none" },
+            hold_action: actionConfigs.hold || { action: "none" },
           },
           action,
         },
@@ -224,23 +224,62 @@ export class IndegoMowerCard extends LitElement {
       })
     );
   }
+
+  handleTap(entityId, actionConfigs) {
+    if (this._holdFired) {
+      this._holdFired = false;
+      return;
+    }
+  
+    clearTimeout(this._tapTimer);
+  
+    this._tapTimer = setTimeout(() => {
+      this.fireHassAction(entityId, actionConfigs, "tap");
+    }, 250);
+  }
+  
+  handleDoubleTap(entityId, actionConfigs) {
+    clearTimeout(this._tapTimer);
+    this.fireHassAction(entityId, actionConfigs, "double_tap");
+  }
+  
+  handleHoldStart(entityId, actionConfigs) {
+    this._holdFired = false;
+  
+    clearTimeout(this._holdTimer);
+  
+    this._holdTimer = setTimeout(() => {
+      this._holdFired = true;
+      this.fireHassAction(entityId, actionConfigs, "hold");
+    }, 500);
+  }
+  
+  handleHoldEnd() {
+    clearTimeout(this._holdTimer);
+  }
   
   renderMap({ translations, imageUrl, entityId }) {
     if (!imageUrl) {
       return html`<div class="status">${t(translations, "no_map")}</div>`;
     }
   
+    const actionConfigs = {
+      tap: this.config.map_tap_action,
+      double_tap: this.config.map_double_tap_action,
+      hold: this.config.map_hold_action,
+    };
+  
     return html`
       <img
         class="image"
         src="${imageUrl}"
         alt="Mower map"
-        @click=${() =>
-          this.fireHassAction(
-            entityId,
-            this.config.map_tap_action || { action: "more-info" },
-            "tap"
-          )}
+        @click=${() => this.handleTap(entityId, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
       />
     `;
   }
