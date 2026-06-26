@@ -71,6 +71,16 @@ export class IndegoMowerCard extends LitElement {
       `;
     }
 
+    if (!mower) {
+      return html`
+        <ha-card>
+          <div class="status">
+            ${t(translations, "select_entity")}
+          </div>
+        </ha-card>
+      `;
+    }
+
     const mower = this.hass.states[this.config.entity];
     const mowerState = mower?.state;
     const camera = this.hass.states[this.config.map_entity];
