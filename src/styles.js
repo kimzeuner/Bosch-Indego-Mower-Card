@@ -7,7 +7,7 @@ export const CARD_STYLES = `
   }
 
   .battery {
-    border: 1px solid rgba(0,150,136,0.2);
+    border: 1px solid var(--indego-border-color, rgba(0,150,136,0.2));
     border-radius: 8px;
     padding: 8px;
     font-weight: bold;
@@ -32,7 +32,7 @@ export const CARD_STYLES = `
   }
 
   .stat {
-    border: 1px solid rgba(0,150,136,0.2);
+    border: 1px solid var(--indego-border-color, rgba(0,150,136,0.2));
     border-radius: 8px;
     padding: 8px;
     display: flex;
@@ -58,7 +58,7 @@ export const CARD_STYLES = `
   }
 
   .warning {
-    color: darkred;
+    color: var(--indego-error-color, var(--error-color));
   }
 
   .actions {
@@ -73,7 +73,7 @@ export const CARD_STYLES = `
     border-radius: 12px;
     padding: 12px;
     cursor: pointer;
-    background: var(--card-background-color);
+    background: var(--indego-button-background, var(--card-background-color));
   }
 
   button ha-icon {

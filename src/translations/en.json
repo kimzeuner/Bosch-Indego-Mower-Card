@@ -21,6 +21,12 @@
     "mowed_size": "Mowed area",
     "stuck": "Stuck",
     "alert": "Alert",
-    "errors": "Errors"
+    "errors": "Errors",
+    "colors": "Colors",
+    "theme_primary_color": "Primary color",
+    "theme_border_color": "Border color",
+    "theme_warning_color": "Warning color",
+    "theme_error_color": "Error color",
+    "theme_button_background": "Button background"
   }
 }
