@@ -105,19 +105,23 @@ export class IndegoMowerCard extends LitElement {
 
     return html`
       <ha-card>
-        ${this.renderBatteryHeader({
-          translations,
-          mowerState,
-          battery,
-          batteryPct,
-          charging,
-        })}
+        ${this.config.show_battery_header !== false
+          ? this.renderBatteryHeader({
+              translations,
+              mowerState,
+              battery,
+              batteryPct,
+              charging,
+            })
+          : html``}
         
         ${this.config.show_map !== false
           ? this.renderMap({ translations, imageUrl })
           : html``}
         
-        ${this.renderStatus({ mower, stateDetail })}
+        ${this.config.show_status !== false
+          ? this.renderStatus({ mower, stateDetail })
+          : html``}
         
         ${this.renderStats(stats)}
         
