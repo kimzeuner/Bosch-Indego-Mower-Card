@@ -79,4 +79,8 @@ export const CARD_STYLES = `
   button ha-icon {
     --mdc-icon-size: 28px;
   }
+
+  .clickable {
+    cursor: pointer;
+  }
 `;
