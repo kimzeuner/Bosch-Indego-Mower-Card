@@ -11,6 +11,7 @@ export const DEFAULT_CONFIG = {
   show_map: true,
   show_battery_header: true,
   show_status: true,
+  action_layout: "icon",
   theme_button_background: "var(--card-background-color)",
   theme_primary_color: "var(--primary-color)",
   theme_warning_color: "var(--warning-color)",
