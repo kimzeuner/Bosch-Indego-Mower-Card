@@ -21,6 +21,12 @@
     "mowed_size": "Gemähte Fläche",
     "stuck": "Festgefahren",
     "alert": "Alarm",
-    "errors": "Fehler"
+    "errors": "Fehler",
+    "colors": "Farben",
+    "theme_primary_color": "Primärfarbe",
+    "theme_border_color": "Rahmenfarbe",
+    "theme_warning_color": "Warnfarbe",
+    "theme_error_color": "Fehlerfarbe",
+    "theme_button_background": "Button-Hintergrund"
   }
 }
