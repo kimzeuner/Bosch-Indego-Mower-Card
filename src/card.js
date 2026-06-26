@@ -124,6 +124,12 @@ export class IndegoMowerCard extends LitElement {
       mowedSize,
       stuck,
       alerts,
+      entities: {
+        battery: this.config.battery_entity,
+        mowed: this.config.mowed_entity || this.config.mowed_size_entity,
+        alerts: this.config.alert_entity,
+        stuck: this.config.stuck_entity,
+      },
     };
 
     const colors = this.getColors();
@@ -268,12 +274,15 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
   
-  renderMowedStat({ translations, mowed, mowedSize }) {
+  renderMowedStat({ translations, mowed, mowedSize, entities }) {
     const mowedValue = mowed ? formatValue(mowed, "%") : null;
     const sizeValue = mowedSize ? formatValue(mowedSize, "m²") : null;
   
     return html`
-      <div class="stat">
+      <div
+        class="stat clickable"
+        @click=${() => this.fireMoreInfo(entities.mowed)}
+      >
         <div class="label">${t(translations, "mowed")}</div>
         <div class="value">
           ${mowedValue || ""}
@@ -284,11 +293,14 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
   
-  renderAlertStat({ translations, alerts }) {
+  renderAlertStat({ translations, alerts, entities }) {
     const errorCount = getErrorCount(alerts);
   
     return html`
-      <div class="stat">
+      <div
+        class="stat clickable"
+        @click=${() => this.fireMoreInfo(entities.alerts)}
+      >
         <div class="label">${t(translations, "errors")}</div>
         <div class="value ${errorCount > 0 ? "warning" : ""}">
           ${errorCount}
@@ -297,9 +309,12 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
   
-  renderStuckStat({ translations, stuck }) {
+  renderStuckStat({ translations, stuck, entities }) {
     return html`
-      <div class="stat">
+      <div
+        class="stat clickable"
+        @click=${() => this.fireMoreInfo(entities.stuck)}
+      >
         <div class="label">${t(translations, "stuck")}</div>
         <div class="value ${stuck.state === "on" ? "warning" : ""}">
           ${stuck.state === "on"
@@ -310,12 +325,13 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
   
-  renderBatteryStat({ translations, battery, batteryPct }) {
+  renderBatteryStat({ translations, battery, batteryPct, entities }) {
     const fillColor = batteryFillColor(batteryPct);
   
     return html`
       <div
-        class="stat battery-stat"
+        class="stat battery-stat clickable"
+        @click=${() => this.fireMoreInfo(entities.battery)}
         style="
           background: linear-gradient(
             to top,
