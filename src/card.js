@@ -250,7 +250,7 @@ export class IndegoMowerCard extends LitElement {
       <div
         class="status clickable"
         @click=${(event) =>
-          this.handleElementAction(event, entityId, {
+          this.fireHassAction(event, entityId, {
             tap: this.config.status_tap_action,
             double_tap: this.config.status_double_tap_action,
             hold: this.config.status_hold_action,
@@ -383,20 +383,6 @@ export class IndegoMowerCard extends LitElement {
         <div class="value">${formatValue(battery, "%")}</div>
       </div>
     `;
-  }
-
-  handleElementAction(action, entityId, actionConfigs) {
-    handleAction(
-      this,
-      this.hass,
-      {
-        entity: entityId,
-        tap_action: actionConfigs.tap,
-        double_tap_action: actionConfigs.double_tap,
-        hold_action: actionConfigs.hold,
-      },
-      action
-    );
   }
   
   renderActionButton(actionId, disabled) {
