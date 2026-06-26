@@ -66,9 +66,20 @@ export class IndegoMowerCardEditor extends HTMLElement {
                       ${label}
                     </div>
             
-                    <ha-formfield label="${t(translations, "editor.show_map")}">
+                    <div style="
+                      display:flex;
+                      align-items:center;
+                      gap:8px;
+                    ">
+                      <span style="
+                        font-size:14px;
+                        color: var(--secondary-text-color);
+                      ">
+                        ${t(translations, "editor.show_map")}
+                      </span>
+                    
                       <ha-switch config-value="show_map"></ha-switch>
-                    </ha-formfield>
+                    </div>
             
                   </div>
             
