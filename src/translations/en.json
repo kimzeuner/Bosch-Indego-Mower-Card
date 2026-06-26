@@ -11,7 +11,7 @@
   "editor": {
     "mower": "Mower",
     "map": "Map",
-    "show_map": "Show map",
+    "show_map": "Show",
     "battery": "Battery",
     "charging": "Charging",
     "state_detail": "Status detail",
