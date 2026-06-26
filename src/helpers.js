@@ -12,7 +12,6 @@ export const DEFAULT_CONFIG = {
   show_battery_header: true,
   show_status: true,
   theme_primary_color: "var(--primary-color)",
-  theme_accent_color: "var(--primary-color)",
   theme_warning_color: "var(--warning-color)",
   theme_error_color: "var(--error-color)",
   theme_border_color: "rgba(0,150,136,0.2)"
