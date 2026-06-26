@@ -29,4 +29,9 @@
     "theme_error_color": "Fehlerfarbe",
     "theme_button_background": "Button-Hintergrund"
   }
+  "actions": {
+    "start": "Start",
+    "pause": "Pause",
+    "dock": "Andocken"
+  }
 }
