@@ -12,7 +12,9 @@ export default [
         customElements: "readonly",
         document: "readonly",
         window: "readonly",
-        CustomEvent: "readonly"
+        CustomEvent: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly"
       }
     },
     rules: {

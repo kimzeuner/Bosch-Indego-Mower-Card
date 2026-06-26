@@ -206,25 +206,100 @@ export class IndegoMowerCard extends LitElement {
       </div>
     `;
   }
+
+  fireHassAction(entityId, actionConfigs, action) {
+    this.dispatchEvent(
+      new CustomEvent("hass-action", {
+        detail: {
+          config: {
+            entity: entityId,
+            tap_action: actionConfigs.tap || { action: "more-info" },
+            double_tap_action: actionConfigs.double_tap || { action: "none" },
+            hold_action: actionConfigs.hold || { action: "none" },
+          },
+          action,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  handleTap(entityId, actionConfigs) {
+    if (this._holdFired) {
+      this._holdFired = false;
+      return;
+    }
+  
+    clearTimeout(this._tapTimer);
+  
+    this._tapTimer = setTimeout(() => {
+      this.fireHassAction(entityId, actionConfigs, "tap");
+    }, 250);
+  }
+  
+  handleDoubleTap(entityId, actionConfigs) {
+    clearTimeout(this._tapTimer);
+    this.fireHassAction(entityId, actionConfigs, "double_tap");
+  }
+  
+  handleHoldStart(entityId, actionConfigs) {
+    this._holdFired = false;
+  
+    clearTimeout(this._holdTimer);
+  
+    this._holdTimer = setTimeout(() => {
+      this._holdFired = true;
+      this.fireHassAction(entityId, actionConfigs, "hold");
+    }, 500);
+  }
+  
+  handleHoldEnd() {
+    clearTimeout(this._holdTimer);
+  }
   
   renderMap({ translations, imageUrl, entityId }) {
-    return imageUrl
-      ? html`
-          <img
-            class="image"
-            src="${imageUrl}"
-            alt="Mower map"
-            @click=${() => this.fireMoreInfo(entityId)}
-          />
-        `
-      : html`<div class="status">${t(translations, "no_map")}</div>`;
+    if (!imageUrl) {
+      return html`<div class="status">${t(translations, "no_map")}</div>`;
+    }
+  
+    const actionConfigs = {
+      tap: this.config.map_tap_action,
+      double_tap: this.config.map_double_tap_action,
+      hold: this.config.map_hold_action,
+    };
+  
+    return html`
+      <img
+        class="image"
+        src="${imageUrl}"
+        alt="Mower map"
+        @click=${() => this.handleTap(entityId, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
+      />
+    `;
   }
   
   renderStatus({ mower, stateDetail, entityId }) {
+    const actionConfigs = {
+      tap: this.config.status_tap_action,
+      double_tap: this.config.status_double_tap_action,
+      hold: this.config.status_hold_action,
+    };
+  
     return html`
       <div
-        class="status"
-        @click=${() => this.fireMoreInfo(entityId)}
+        class="status clickable"
+        @click=${() => this.handleTap(entityId, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
       >
         ${stateDetail?.state || mower?.state || "-"}
       </div>
@@ -280,11 +355,21 @@ export class IndegoMowerCard extends LitElement {
   renderMowedStat({ translations, mowed, mowedSize, entities }) {
     const mowedValue = mowed ? formatValue(mowed, "%") : null;
     const sizeValue = mowedSize ? formatValue(mowedSize, "m²") : null;
-  
+    const actionConfigs = {
+      tap: this.config.mowed_tap_action,
+      double_tap: this.config.mowed_double_tap_action,
+      hold: this.config.mowed_hold_action,
+    };
+    
     return html`
       <div
         class="stat clickable"
-        @click=${() => this.fireMoreInfo(entities.mowed)}
+        @click=${() => this.handleTap(entities.mowed, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entities.mowed, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entities.mowed, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
       >
         <div class="label">${t(translations, "mowed")}</div>
         <div class="value">
@@ -299,10 +384,21 @@ export class IndegoMowerCard extends LitElement {
   renderAlertStat({ translations, alerts, entities }) {
     const errorCount = getErrorCount(alerts);
   
+    const actionConfigs = {
+      tap: this.config.alerts_tap_action,
+      double_tap: this.config.alerts_double_tap_action,
+      hold: this.config.alerts_hold_action,
+    };
+  
     return html`
       <div
         class="stat clickable"
-        @click=${() => this.fireMoreInfo(entities.alerts)}
+        @click=${() => this.handleTap(entities.alerts, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entities.alerts, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entities.alerts, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
       >
         <div class="label">${t(translations, "errors")}</div>
         <div class="value ${errorCount > 0 ? "warning" : ""}">
@@ -313,10 +409,21 @@ export class IndegoMowerCard extends LitElement {
   }
   
   renderStuckStat({ translations, stuck, entities }) {
+    const actionConfigs = {
+      tap: this.config.stuck_tap_action,
+      double_tap: this.config.stuck_double_tap_action,
+      hold: this.config.stuck_hold_action,
+    };
+  
     return html`
       <div
         class="stat clickable"
-        @click=${() => this.fireMoreInfo(entities.stuck)}
+        @click=${() => this.handleTap(entities.stuck, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entities.stuck, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entities.stuck, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
       >
         <div class="label">${t(translations, "stuck")}</div>
         <div class="value ${stuck.state === "on" ? "warning" : ""}">
@@ -331,10 +438,21 @@ export class IndegoMowerCard extends LitElement {
   renderBatteryStat({ translations, battery, batteryPct, entities }) {
     const fillColor = batteryFillColor(batteryPct);
   
+    const actionConfigs = {
+      tap: this.config.battery_tap_action,
+      double_tap: this.config.battery_double_tap_action,
+      hold: this.config.battery_hold_action,
+    };
+  
     return html`
       <div
         class="stat battery-stat clickable"
-        @click=${() => this.fireMoreInfo(entities.battery)}
+        @click=${() => this.handleTap(entities.battery, actionConfigs)}
+        @dblclick=${() => this.handleDoubleTap(entities.battery, actionConfigs)}
+        @pointerdown=${() => this.handleHoldStart(entities.battery, actionConfigs)}
+        @pointerup=${() => this.handleHoldEnd()}
+        @pointerleave=${() => this.handleHoldEnd()}
+        @pointercancel=${() => this.handleHoldEnd()}
         style="
           background: linear-gradient(
             to top,
@@ -349,18 +467,6 @@ export class IndegoMowerCard extends LitElement {
         <div class="value">${formatValue(battery, "%")}</div>
       </div>
     `;
-  }
-
-  fireMoreInfo(entityId) {
-    if (!entityId) return;
-  
-    this.dispatchEvent(
-      new CustomEvent("hass-more-info", {
-        detail: { entityId },
-        bubbles: true,
-        composed: true,
-      })
-    );
   }
   
   renderActionButton(actionId, disabled) {

@@ -16,7 +16,30 @@ export const DEFAULT_CONFIG = {
   theme_primary_color: "var(--primary-color)",
   theme_warning_color: "var(--warning-color)",
   theme_error_color: "var(--error-color)",
-  theme_border_color: "rgba(0,150,136,0.2)"
+  theme_border_color: "rgba(0,150,136,0.2)",
+  map_tap_action: { action: "more-info" },
+  map_double_tap_action: { action: "none" },
+  map_hold_action: { action: "none" },
+  
+  status_tap_action: { action: "more-info" },
+  status_double_tap_action: { action: "none" },
+  status_hold_action: { action: "none" },
+  
+  mowed_tap_action: { action: "more-info" },
+  mowed_double_tap_action: { action: "none" },
+  mowed_hold_action: { action: "none" },
+  
+  alerts_tap_action: { action: "more-info" },
+  alerts_double_tap_action: { action: "none" },
+  alerts_hold_action: { action: "none" },
+  
+  stuck_tap_action: { action: "more-info" },
+  stuck_double_tap_action: { action: "none" },
+  stuck_hold_action: { action: "none" },
+  
+  battery_tap_action: { action: "more-info" },
+  battery_double_tap_action: { action: "none" },
+  battery_hold_action: { action: "none" }
 };
 
 export function formatValue(entity, fallbackUnit = "") {
