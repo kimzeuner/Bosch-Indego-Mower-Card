@@ -6,5 +6,5 @@ window.customCards.push({
   type: "indego-mower-card",
   name: "Indego Mower Card",
   description: "Bosch Indego robotic mower card",
-  preview: true,
+  preview: true
 });
