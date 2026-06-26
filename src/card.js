@@ -40,9 +40,7 @@ export class IndegoMowerCard extends LitElement {
   }
 
   static getStubConfig() {
-    return {
-      entity: "lawn_mower.example",
-    };
+    return { ...DEFAULT_CONFIG };
   }
 
   setConfig(config) {
@@ -61,15 +59,15 @@ export class IndegoMowerCard extends LitElement {
 
     const translations = getTranslations(this.hass);
 
-    if (!this.config.entity) {
-      return html`
-        <ha-card>
-          <div style="padding:16px;">
-            ${t(translations, "select_entity")}
-          </div>
-        </ha-card>
-      `;
-    }
+    const previewEntity =
+      this.config.entity ||
+      Object.keys(this.hass.states).find((entityId) =>
+        entityId.startsWith("lawn_mower.")
+      );
+    
+    const mower = previewEntity
+      ? this.hass.states[previewEntity]
+      : undefined;
 
     if (!mower) {
       return html`
@@ -80,8 +78,7 @@ export class IndegoMowerCard extends LitElement {
         </ha-card>
       `;
     }
-
-    const mower = this.hass.states[this.config.entity];
+    
     const mowerState = mower?.state;
     const camera = this.hass.states[this.config.map_entity];
     const battery = this.hass.states[this.config.battery_entity];
