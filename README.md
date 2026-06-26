@@ -1,115 +1,88 @@
 # Bosch Indego Mower Card
 
-A modern Home Assistant Lovelace card for Bosch Indego robotic mowers.
+> A modern Home Assistant Lovelace card for Bosch Indego robotic mowers — live map, battery visualization, mower controls and statistics in a single compact card.
 
-The card provides a clean dashboard with live mower information, map display, battery visualization, mower controls and statistics in a single compact card.
+![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Card-blue?style=for-the-badge&logo=home-assistant)
+[![Bosch Indego](https://img.shields.io/badge/Bosch-Indego-green?style=for-the-badge)](https://github.com/sander1988/indego)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange?style=for-the-badge)](https://hacs.xyz/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.me/KZeuner)
 
 > **Note**
->
-> This card has been developed for the Bosch Indego integration but can also be used with compatible Home Assistant lawn mower entities.
+> This card was developed for the Bosch Indego integration but is also compatible with standard Home Assistant `lawn_mower` entities.
 
 ---
 
 ## Features
 
-- 🗺️ Live mower map
-- 🔋 Dynamic battery visualization
-- 📊 Mowing statistics
-- ⚠️ Error counter
-- 🚧 Stuck indication
-- ▶️ Start mowing
-- ⏸ Pause mowing
-- 🏠 Return to dock
-- 🌍 English & German translations
-- ⚙️ Visual configuration editor
-- 🎨 Full Home Assistant theme support
+- **Live mower map** — real-time camera entity overlay
+- **Dynamic battery** — visual charge indicator with charging state
+- **Mowing statistics** — mowed percentage and area
+- **Controls** — start, pause, and return to dock
+- **Alert counter** — surfaces errors from sensors, counters, or binary sensors
+- **Stuck indication** — dedicated binary sensor support
+- **Visual editor** — configure without writing YAML
+- **Localization** — English and German
+- **Full theme support** — adapts to your Home Assistant theme
 
 ---
 
 ## Screenshots
 
-### Mowing
-
-![Bosch Indego Mower Card](images/mower_card_mowing.png)
-
-### Docked
-
-![Bosch Indego Mower Card](images/mower_card_docked.png)
-
-### Visual Editor
-
-![Bosch Indego Mower Card](images/mower_card_visual_editor.png)
+| Mowing | Docked | Visual Editor |
+|---|---|---|
+| ![Mowing](images/mower_card_mowing.png) | ![Docked](images/mower_card_docked.png) | ![Editor](images/mower_card_visual_editor.png) |
 
 ---
 
 ## Installation
 
-### HACS (recommended)
+### Via HACS (Recommended)
 
-1. Open **HACS**
-2. Navigate to **Frontend**
-3. Open the menu → **Custom repositories**
-4. Add this repository `https://github.com/kimzeuner/Bosch-Indego-Mower-Card`
-5. Category: **Dashboard**
-6. Install **Bosch Indego Mower Card**
-7. Restart Home Assistant
+1. Open **HACS** → **Frontend**
+2. Click the three-dot menu → **Custom Repositories**
+3. Add repository: https://github.com/kimzeuner/Bosch-Indego-Mower-Card
+Category: **Dashboard**
+4. Install **Bosch Indego Mower Card**
+5. Restart Home Assistant
 
----
+### Manual
 
-### Manual installation
-
-Download the latest release and copy
-
-```
-indego-mower-card.js
-```
-
-to
-
-```
-/config/www/
-```
-
-Add the resource:
-
+1. Download the latest release and copy `indego-mower-card.js` to `/config/www/`
+2. Add a dashboard resource:
 ```yaml
-resources:
-  - url: /local/indego-mower-card.js
-    type: module
+   resources:
+     - url: /local/indego-mower-card.js
+       type: module
 ```
-
-Restart Home Assistant.
+3. Restart Home Assistant
 
 ---
 
 ## Configuration
 
-The card can be configured using the visual editor or YAML.
+The card supports both the visual editor and manual YAML configuration.
 
 ### Required
 
 | Option | Description |
-|----------|-------------|
+|---|---|
 | `entity` | Lawn mower entity |
-
----
 
 ### Optional
 
 | Option | Description |
-|----------|-------------|
-| `map_entity` | Camera entity used to display the mower map |
+|---|---|
+| `map_entity` | Camera entity for the live mower map |
 | `battery_entity` | Battery percentage sensor |
 | `charging_entity` | Charging binary sensor |
-| `state_detail_entity` | Detailed mower status |
-| `mowed_entity` | Mowed percentage |
-| `mowed_size_entity` | Mowed area |
+| `state_detail_entity` | Detailed mower status sensor |
+| `mowed_entity` | Mowed percentage sensor |
+| `mowed_size_entity` | Mowed area sensor |
 | `stuck_entity` | Binary sensor indicating whether the mower is stuck |
-| `alert_entity` | Alert entity (supports sensors, counters and Bosch alert binary sensors) |
+| `alert_entity` | Alert entity — supports sensors, counters, and Bosch alert binary sensors |
 
----
-
-## Example
+### Example
 
 ```yaml
 type: custom:indego-mower-card
@@ -126,75 +99,33 @@ alert_entity: binary_sensor.indego_alert
 
 ---
 
-## Supported alert entities
+## Alert Entity Support
 
-The card automatically supports multiple entity types.
+The card automatically handles multiple entity types for the alert/error counter.
 
-### Counter
-
-```
-counter.indego_errors
-```
-
-Uses the entity state.
-
----
-
-### Sensor
-
-```
-sensor.indego_errors
-```
-
-Uses the entity state.
-
----
-
-### Bosch Binary Sensor
-
-```
-binary_sensor.indego_alert
-```
-
-Uses the attribute
-
-```
-alerts_count
-```
-
-automatically.
-
-No template sensor is required.
+| Type | Example | Value source |
+|---|---|---|
+| Counter | `counter.indego_errors` | Entity state |
+| Sensor | `sensor.indego_errors` | Entity state |
+| Bosch Binary Sensor | `binary_sensor.indego_alert` | `alerts_count` attribute — no template sensor needed |
 
 ---
 
 ## Compatibility
 
-Tested with
-
-- Home Assistant 2026.6.x
-- Bosch Indego Integration
+| Component | Version |
+|---|---|
+| Home Assistant | 2026.6.x |
+| Bosch Indego Integration | latest |
 
 ---
 
 ## Contributing
 
-Contributions, bug reports and feature requests are welcome.
-
-Please open an Issue or Pull Request on GitHub.
-
----
-
-## Support this project ❤️
-
-If this project saves you time or is useful to you, you can support its development:
-
-[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.me/KZeuner)
-
-Thank you very much! 😊
+Bug reports, feature requests and pull requests are welcome — please open an [Issue or PR on GitHub](https://github.com/kimzeuner/Bosch-Indego-Mower-Card).
 
 ---
 
 ## License
 
-MIT License
+Released under the [MIT License](LICENSE).
