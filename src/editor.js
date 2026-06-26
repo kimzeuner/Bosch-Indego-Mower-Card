@@ -34,10 +34,10 @@ export class IndegoMowerCardEditor extends HTMLElement {
 
     const fields = [
       ["entity", t(translations, "editor.mower")],
-      ["map_entity", t(translations, "editor.map")],
-      ["battery_entity", t(translations, "editor.battery")],
+      ["map_entity", t(translations, "editor.map"), "show_map"],
+      ["battery_entity", t(translations, "editor.battery"), "show_battery_header"],
       ["charging_entity", t(translations, "editor.charging")],
-      ["state_detail_entity", t(translations, "editor.state_detail")],
+      ["state_detail_entity", t(translations, "editor.state_detail"), "show_status"],
       ["mowed_entity", t(translations, "editor.mowed")],
       ["mowed_size_entity", t(translations, "editor.mowed_size")],
       ["stuck_entity", t(translations, "editor.stuck")],
@@ -47,86 +47,44 @@ export class IndegoMowerCardEditor extends HTMLElement {
     this.innerHTML = `
       <div style="padding:16px;">
         ${fields
-          .map(([key, label]) => {
-            if (key === "map_entity") {
-              return `
-                <div style="margin-bottom:12px;">
-            
-                  <div style="
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:center;
-                    margin-bottom:4px;
-                  ">
-            
-                    <div style="
-                      font-size:14px;
-                      font-weight:500;
-                    ">
-                      ${label}
-                    </div>
-            
-                    <div style="
-                      display:flex;
-                      align-items:center;
-                      gap:8px;
-                    ">
-                      <span style="
-                        font-size:14px;
-                        color: var(--secondary-text-color);
-                      ">
-                        ${t(translations, "editor.show_map")}
-                      </span>
-                    
-                      <ha-switch config-value="show_map"></ha-switch>
-                    </div>
-            
+          .map(
+            ([key, label, toggleKey]) => `
+              <div style="margin-bottom:12px;">
+                <div style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:center;
+                  margin-bottom:4px;
+                ">
+                  <div style="font-size:14px; font-weight:500;">
+                    ${label}
                   </div>
-            
-                  <ha-entity-picker
-                    config-value="${key}"
-                    allow-custom-entity
-                  ></ha-entity-picker>
-            
+
+                  ${
+                    toggleKey
+                      ? `
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <span style="font-size:14px; color:var(--secondary-text-color);">
+                            ${t(translations, `editor.${toggleKey}`)}
+                          </span>
+                          <ha-switch config-value="${toggleKey}"></ha-switch>
+                        </div>
+                      `
+                      : ""
+                  }
                 </div>
-              `;
-            }
-    
-            return `
-              <ha-entity-picker
-                label="${label}"
-                config-value="${key}"
-                allow-custom-entity
-                style="display:block; margin-bottom:12px;"
-              ></ha-entity-picker>
-            `;
-          })
+
+                <ha-entity-picker
+                  config-value="${key}"
+                  allow-custom-entity
+                  style="display:block;"
+                ></ha-entity-picker>
+              </div>
+            `
+          )
           .join("")}
       </div>
     `;
-
-    const showMapSwitch = this.querySelector('ha-switch[config-value="show_map"]');
-    
-    if (showMapSwitch) {
-      showMapSwitch.checked = this._config.show_map !== false;
-    
-      showMapSwitch.addEventListener("change", (event) => {
-        const config = {
-          ...this._config,
-          show_map: event.target.checked,
-        };
-    
-        this._config = config;
-    
-        this.dispatchEvent(
-          new CustomEvent("config-changed", {
-            detail: { config },
-            bubbles: true,
-            composed: true,
-          })
-        );
-      });
-    }
 
     this.querySelectorAll("ha-entity-picker").forEach((picker) => {
       const key = picker.getAttribute("config-value");
@@ -136,9 +94,9 @@ export class IndegoMowerCardEditor extends HTMLElement {
       if (key === "entity") {
         picker.includeDomains = ["lawn_mower"];
       }
-      
+
       picker.value = this._config[key] || "";
-      
+
       picker.addEventListener("value-changed", (event) => {
         const value = event.detail.value;
         const config = { ...this._config };
@@ -148,20 +106,42 @@ export class IndegoMowerCardEditor extends HTMLElement {
 
           if (key === "entity") {
             const detected = autoDetectIndegoEntities(this._hass, value);
-            
+
             Object.entries(detected).forEach(([detectedKey, detectedValue]) => {
               if (!config[detectedKey]) {
                 config[detectedKey] = detectedValue;
               }
             });
           }
-          
         } else {
           delete config[key];
         }
 
         this._config = config;
         this.updatePickerValues();
+
+        this.dispatchEvent(
+          new CustomEvent("config-changed", {
+            detail: { config },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      });
+    });
+
+    this.querySelectorAll("ha-switch").forEach((toggle) => {
+      const key = toggle.getAttribute("config-value");
+
+      toggle.checked = this._config[key] !== false;
+
+      toggle.addEventListener("change", (event) => {
+        const config = {
+          ...this._config,
+          [key]: event.target.checked,
+        };
+
+        this._config = config;
 
         this.dispatchEvent(
           new CustomEvent("config-changed", {
@@ -187,11 +167,11 @@ export class IndegoMowerCardEditor extends HTMLElement {
         picker.value = value;
       }
     });
-    const showMapSwitch = this.querySelector('ha-switch[config-value="show_map"]');
-    
-    if (showMapSwitch) {
-      showMapSwitch.checked = this._config.show_map !== false;
-    }
+
+    this.querySelectorAll("ha-switch").forEach((toggle) => {
+      const key = toggle.getAttribute("config-value");
+      toggle.checked = this._config[key] !== false;
+    });
   }
 }
 
