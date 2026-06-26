@@ -214,7 +214,8 @@ export class IndegoMowerCard extends LitElement {
             class="image"
             src="${imageUrl}"
             alt="Mower map"
-            @click=${() => this.fireMoreInfo(entityId)}
+            @click=${() =>
+              this.fireHassAction(this.config.map_tap_action, "tap", entityId)}
           />
         `
       : html`<div class="status">${t(translations, "no_map")}</div>`;
@@ -224,7 +225,8 @@ export class IndegoMowerCard extends LitElement {
     return html`
       <div
         class="status"
-        @click=${() => this.fireMoreInfo(entityId)}
+        @click=${() =>
+          this.fireHassAction(this.config.status_tap_action, "tap", entityId)}
       >
         ${stateDetail?.state || mower?.state || "-"}
       </div>
@@ -284,7 +286,8 @@ export class IndegoMowerCard extends LitElement {
     return html`
       <div
         class="stat clickable"
-        @click=${() => this.fireMoreInfo(entities.mowed)}
+        @click=${() =>
+          this.fireHassAction(this.config.mowed_tap_action, "tap", entities.mowed)}
       >
         <div class="label">${t(translations, "mowed")}</div>
         <div class="value">
@@ -302,7 +305,8 @@ export class IndegoMowerCard extends LitElement {
     return html`
       <div
         class="stat clickable"
-        @click=${() => this.fireMoreInfo(entities.alerts)}
+        @click=${() =>
+          this.fireHassAction(this.config.alerts_tap_action, "tap", entities.alerts)}
       >
         <div class="label">${t(translations, "errors")}</div>
         <div class="value ${errorCount > 0 ? "warning" : ""}">
@@ -316,7 +320,8 @@ export class IndegoMowerCard extends LitElement {
     return html`
       <div
         class="stat clickable"
-        @click=${() => this.fireMoreInfo(entities.stuck)}
+        @click=${() =>
+          this.fireHassAction(this.config.stuck_tap_action, "tap", entities.stuck)}
       >
         <div class="label">${t(translations, "stuck")}</div>
         <div class="value ${stuck.state === "on" ? "warning" : ""}">
@@ -334,7 +339,8 @@ export class IndegoMowerCard extends LitElement {
     return html`
       <div
         class="stat battery-stat clickable"
-        @click=${() => this.fireMoreInfo(entities.battery)}
+        @click=${() =>
+          this.fireHassAction(this.config.battery_tap_action, "tap", entities.battery)}
         style="
           background: linear-gradient(
             to top,
@@ -351,12 +357,16 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
 
-  fireMoreInfo(entityId) {
-    if (!entityId) return;
-  
+  fireHassAction(config, action, entityId) {
     this.dispatchEvent(
-      new CustomEvent("hass-more-info", {
-        detail: { entityId },
+      new CustomEvent("hass-action", {
+        detail: {
+          config: {
+            entity: entityId,
+            ...config,
+          },
+          action,
+        },
         bubbles: true,
         composed: true,
       })
