@@ -27,7 +27,12 @@
     "theme_border_color": "Rahmenfarbe",
     "theme_warning_color": "Warnfarbe",
     "theme_error_color": "Fehlerfarbe",
-    "theme_button_background": "Button-Hintergrund"
+    "theme_button_background": "Button-Hintergrund",
+    "action_layout": "Aktionslayout",
+    "action_layout_icon": "Nur Icon",
+    "action_layout_text": "Nur Text",
+    "action_layout_icon_text": "Icon + Text",
+    "action_layout_text_icon": "Text + Icon"
   },
   "actions": {
     "start": "Start",
