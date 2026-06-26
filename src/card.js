@@ -40,7 +40,9 @@ export class IndegoMowerCard extends LitElement {
   }
 
   static getStubConfig() {
-    return { ...DEFAULT_CONFIG };
+    return {
+      entity: "lawn_mower.example",
+    };
   }
 
   setConfig(config) {
