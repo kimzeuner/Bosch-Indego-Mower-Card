@@ -8,6 +8,7 @@
   "no": "Nein",
   "no_map": "Keine Karte verfügbar",
   "select_entity": "Bitte wähle im Karteneditor eine Mäher-Entität aus.",
+  "show_map": "Karte anzeigen",
   "editor": {
     "mower": "Mäher",
     "map": "Karte",
