@@ -104,12 +104,25 @@ export class IndegoMowerCardEditor extends HTMLElement {
           ${colorFields
             .map(
               ([key, label]) => `
-                <ha-textfield
-                  label="${label}"
-                  config-value="${key}"
-                  value="${this._config[key] || ""}"
-                  style="width:100%;"
-                ></ha-textfield>
+                <label style="display:block;">
+                  <div style="font-size:12px; color:var(--secondary-text-color); margin-bottom:4px;">
+                    ${label}
+                  </div>
+                  <input
+                    type="text"
+                    config-value="${key}"
+                    value="${this._config[key] || ""}"
+                    style="
+                      width:100%;
+                      box-sizing:border-box;
+                      padding:8px;
+                      border:1px solid var(--divider-color);
+                      border-radius:4px;
+                      background:var(--card-background-color);
+                      color:var(--primary-text-color);
+                    "
+                  />
+                </label>
               `
             )
             .join("")}
@@ -161,7 +174,7 @@ export class IndegoMowerCardEditor extends HTMLElement {
       });
     });
 
-    this.querySelectorAll("ha-textfield").forEach((field) => {
+    this.querySelectorAll('input[config-value^="theme_"]').forEach((field) => {
       const key = field.getAttribute("config-value");
     
       field.addEventListener("change", (event) => {
@@ -229,7 +242,7 @@ export class IndegoMowerCardEditor extends HTMLElement {
       toggle.checked = this._config[key] !== false;
     });
 
-    this.querySelectorAll("ha-textfield").forEach((field) => {
+    this.querySelectorAll('input[config-value^="theme_"]').forEach((field) => {
       const key = field.getAttribute("config-value");
       const value = this._config[key] || "";
     
