@@ -50,17 +50,33 @@ export class IndegoMowerCardEditor extends HTMLElement {
           .map(([key, label]) => {
             if (key === "map_entity") {
               return `
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                <div style="margin-bottom:12px;">
+            
+                  <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    margin-bottom:4px;
+                  ">
+            
+                    <div style="
+                      font-size:14px;
+                      font-weight:500;
+                    ">
+                      ${label}
+                    </div>
+            
+                    <ha-formfield label="${t(translations, "editor.show_map")}">
+                      <ha-switch config-value="show_map"></ha-switch>
+                    </ha-formfield>
+            
+                  </div>
+            
                   <ha-entity-picker
-                    label="${label}"
                     config-value="${key}"
                     allow-custom-entity
-                    style="flex:1;"
                   ></ha-entity-picker>
-    
-                  <ha-formfield label="${t(translations, "editor.show_map")}">
-                    <ha-switch config-value="show_map"></ha-switch>
-                  </ha-formfield>
+            
                 </div>
               `;
             }
