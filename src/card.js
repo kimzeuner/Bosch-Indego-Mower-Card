@@ -9,6 +9,7 @@ import {
 } from "./helpers.js";
 import { CARD_STYLES } from "./styles.js";
 import { getTranslations, t } from "./translations.js";
+import { actionHandler, handleAction  } from "custom-card-helpers";
 
 const ACTIONS = {
   start: {
@@ -214,8 +215,16 @@ export class IndegoMowerCard extends LitElement {
             class="image"
             src="${imageUrl}"
             alt="Mower map"
-            @click=${() =>
-              this.fireHassAction(this.config.map_tap_action, "tap", entityId)}
+            .actionHandler=${actionHandler({
+              hasHold: true,
+              hasDoubleClick: true,
+            })}
+            @action=${(event) =>
+              this.handleElementAction(event, entityId, {
+                tap: this.config.map_tap_action,
+                double_tap: this.config.map_double_tap_action,
+                hold: this.config.map_hold_action,
+              })}
           />
         `
       : html`<div class="status">${t(translations, "no_map")}</div>`;
@@ -224,9 +233,17 @@ export class IndegoMowerCard extends LitElement {
   renderStatus({ mower, stateDetail, entityId }) {
     return html`
       <div
-        class="status"
-        @click=${() =>
-          this.fireHassAction(this.config.status_tap_action, "tap", entityId)}
+        class="status clickable"
+        .actionHandler=${actionHandler({
+          hasHold: true,
+          hasDoubleClick: true,
+        })}
+        @action=${(event) =>
+          this.handleElementAction(event, entityId, {
+            tap: this.config.status_tap_action,
+            double_tap: this.config.status_double_tap_action,
+            hold: this.config.status_hold_action,
+          })}
       >
         ${stateDetail?.state || mower?.state || "-"}
       </div>
@@ -357,19 +374,24 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
 
-  fireHassAction(config, action, entityId) {
-    this.dispatchEvent(
-      new CustomEvent("hass-action", {
-        detail: {
-          config: {
-            entity: entityId,
-            ...config,
-          },
-          action,
-        },
-        bubbles: true,
-        composed: true,
-      })
+  handleElementAction(event, entityId, actionConfigs) {
+    const action = event.detail.action;
+  
+    const actionConfig =
+      action === "double_tap"
+        ? actionConfigs.double_tap
+        : action === "hold"
+          ? actionConfigs.hold
+          : actionConfigs.tap;
+  
+    handleAction(
+      this,
+      this.hass,
+      {
+        entity: entityId,
+        ...actionConfig,
+      },
+      action
     );
   }
   
