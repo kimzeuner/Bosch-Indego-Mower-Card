@@ -7,7 +7,8 @@ export const DEFAULT_CONFIG = {
   mowed_entity: "",
   mowed_size_entity: "",
   stuck_entity: "",
-  alert_entity: ""
+  alert_entity: "",
+  show_map: true
 };
 
 export function formatValue(entity, fallbackUnit = "") {
