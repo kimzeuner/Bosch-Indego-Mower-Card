@@ -47,24 +47,34 @@ export class IndegoMowerCardEditor extends HTMLElement {
     this.innerHTML = `
       <div style="padding:16px;">
         ${fields
-          .map(
-            ([key, label]) => `
+          .map(([key, label]) => {
+            if (key === "map_entity") {
+              return `
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                  <ha-entity-picker
+                    label="${label}"
+                    config-value="${key}"
+                    allow-custom-entity
+                    style="flex:1;"
+                  ></ha-entity-picker>
+    
+                  <ha-formfield label="${t(translations, "editor.show_map")}">
+                    <ha-switch config-value="show_map"></ha-switch>
+                  </ha-formfield>
+                </div>
+              `;
+            }
+    
+            return `
               <ha-entity-picker
                 label="${label}"
                 config-value="${key}"
                 allow-custom-entity
                 style="display:block; margin-bottom:12px;"
               ></ha-entity-picker>
-            `
-          )
+            `;
+          })
           .join("")}
-
-        <ha-formfield label="${t(translations, "editor.show_map")}">
-          <ha-switch
-            config-value="show_map"
-            style="margin-bottom:12px;"
-          ></ha-switch>
-        </ha-formfield>
       </div>
     `;
 
