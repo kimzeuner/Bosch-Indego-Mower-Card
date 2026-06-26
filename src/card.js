@@ -150,11 +150,19 @@ export class IndegoMowerCard extends LitElement {
           : html``}
         
         ${this.config.show_map !== false
-          ? this.renderMap({ translations, imageUrl })
+          ? this.renderMap({
+              translations,
+              imageUrl,
+              entityId: this.config.map_entity,
+            })
           : html``}
         
         ${this.config.show_status !== false
-          ? this.renderStatus({ mower, stateDetail })
+          ? this.renderStatus({
+              mower,
+              stateDetail,
+              entityId: this.config.state_detail_entity || this.config.entity,
+            })
           : html``}
         
         ${this.renderStats(stats)}
@@ -190,15 +198,25 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
   
-  renderMap({ translations, imageUrl }) {
+  renderMap({ translations, imageUrl, entityId }) {
     return imageUrl
-      ? html`<img class="image" src="${imageUrl}" alt="Mower map" />`
+      ? html`
+          <img
+            class="image"
+            src="${imageUrl}"
+            alt="Mower map"
+            @click=${() => this.fireMoreInfo(entityId)}
+          />
+        `
       : html`<div class="status">${t(translations, "no_map")}</div>`;
   }
   
-  renderStatus({ mower, stateDetail }) {
+  renderStatus({ mower, stateDetail, entityId }) {
     return html`
-      <div class="status">
+      <div
+        class="status"
+        @click=${() => this.fireMoreInfo(entityId)}
+      >
         ${stateDetail?.state || mower?.state || "-"}
       </div>
     `;
@@ -314,6 +332,18 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
 
+  fireMoreInfo(entityId) {
+    if (!entityId) return;
+  
+    this.dispatchEvent(
+      new CustomEvent("hass-more-info", {
+        detail: { entityId },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+  
   renderActionButton(actionId, disabled) {
     const action = ACTIONS[actionId];
   
