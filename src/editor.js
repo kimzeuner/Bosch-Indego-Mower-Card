@@ -31,6 +31,11 @@ export class IndegoMowerCardEditor extends LitElement {
       padding: 16px;
     }
 
+    ha-form {
+      display: block;
+      width: 100%;
+    }
+
     .field {
       margin-bottom: 16px;
     }
@@ -260,24 +265,32 @@ export class IndegoMowerCardEditor extends LitElement {
 
   renderSelect(value, options, onChange) {
     return html`
-      <ha-select
-        .value=${value}
-        naturalMenuWidth
-        fixedMenuPosition
-        @closed=${(event) => event.stopPropagation()}
-      >
-        ${options.map(
-          ([optionValue, label]) => html`
-            <mwc-list-item
-              .value=${optionValue}
-              ?selected=${value === optionValue}
-              @click=${() => onChange(optionValue)}
-            >
-              ${label}
-            </mwc-list-item>
-          `
-        )}
-      </ha-select>
+      <ha-form
+        .hass=${this.hass}
+        .data=${{ value }}
+        .schema=${[
+          {
+            name: "value",
+            selector: {
+              select: {
+                mode: "dropdown",
+                options: options.map(([optionValue, label]) => ({
+                  value: optionValue,
+                  label,
+                })),
+              },
+            },
+          },
+        ]}
+        .computeLabel=${() => ""}
+        @value-changed=${(event) => {
+          const selectedValue = event.detail.value?.value;
+  
+          if (selectedValue !== undefined && selectedValue !== value) {
+            onChange(selectedValue);
+          }
+        }}
+      ></ha-form>
     `;
   }
 
