@@ -1,11 +1,24 @@
+<table>
+<tr>
+<td width="140">
+
+<img src="https://raw.githubusercontent.com/kimzeuner/Bosch-Indego-Mower-Card/main/images/icon.png" width="140" alt="Bosch Indego Mower Card">
+
+</td>
+<td>
+
 # Bosch Indego Mower Card
 
-> A modern Home Assistant Lovelace card for Bosch Indego robotic mowers — live map, battery visualization, mower controls, statistics, custom actions and theme customization in a single compact card.
+A modern Home Assistant Lovelace card for Bosch Indego robotic mowers — live map, battery visualization, mower controls, statistics, custom actions and theme customization in a single compact card.
+
+</td>
+</tr>
+</table>
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Card-blue?style=for-the-badge&logo=home-assistant)
 [![Bosch Indego](https://img.shields.io/badge/Bosch-Indego-green?style=for-the-badge)](https://github.com/sander1988/indego)
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange?style=for-the-badge)](https://hacs.xyz/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/github/license/kimzeuner/Bosch-Indego-Mower-Card?style=for-the-badge)](https://github.com/kimzeuner/Bosch-Indego-Mower-Card/blob/main/LICENSE)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.me/KZeuner)
 
 > **Note**
