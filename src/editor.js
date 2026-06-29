@@ -1,17 +1,157 @@
+import { LitElement, html, css } from "lit";
 import { DEFAULT_CONFIG, autoDetectIndegoEntities } from "./helpers.js";
 import { getTranslations, t } from "./translations.js";
 
-export class IndegoMowerCardEditor extends HTMLElement {
-  set hass(hass) {
-    this._hass = hass;
+const ACTION_OPTIONS = [
+  ["more-info", "More info"],
+  ["navigate", "Navigate"],
+  ["url", "URL"],
+  ["call-service", "Call service"],
+  ["assist", "Assist"],
+  ["none", "None"],
+];
 
-    this.querySelectorAll("ha-entity-picker").forEach((picker) => {
-      picker.hass = hass;
-    });
+const ACTION_FIELDS = {
+  map_entity: "map",
+  battery_entity: "battery",
+  state_detail_entity: "status",
+  mowed_entity: "mowed",
+  stuck_entity: "stuck",
+  alert_entity: "alerts",
+};
 
-    if (!this._initialized && this._config) {
-      this.render();
+export class IndegoMowerCardEditor extends LitElement {
+  static properties = {
+    hass: { attribute: false },
+    _config: { state: true },
+    _openSections: { state: true },
+  };
+
+  static styles = css`
+    .editor {
+      padding: 16px;
     }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field-header,
+    .actions-toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .field-header {
+      margin-bottom: 6px;
+    }
+
+    .label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .section-title {
+      margin-top: 24px;
+      margin-bottom: 12px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .switch-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .switch-label,
+    .sub-label {
+      font-size: 12px;
+      color: var(--secondary-text-color);
+    }
+
+    .sub-label {
+      margin-bottom: 4px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .actions-toggle {
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px 0;
+      border: 0;
+      background: transparent;
+      color: var(--primary-text-color);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .actions-toggle-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .entity-section {
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--divider-color);
+    }
+    
+    .entity-section:last-of-type {
+      border-bottom: 0;
+    }
+    
+    .action-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .extra-fields {
+      margin-top: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    ha-form,
+    ha-entity-picker,
+    ha-service-picker {
+      display: block;
+      width: 100%;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 76px;
+      box-sizing: border-box;
+      padding: 8px;
+      border: 1px solid var(--divider-color);
+      border-radius: 4px;
+      background: var(--card-background-color);
+      color: var(--primary-text-color);
+      font: inherit;
+      resize: vertical;
+    }
+
+    @media (max-width: 600px) {
+      .grid-2,
+      .action-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  `;
+
+  constructor() {
+    super();
+    this._openSections = {};
   }
 
   setConfig(config) {
@@ -19,18 +159,12 @@ export class IndegoMowerCardEditor extends HTMLElement {
       ...DEFAULT_CONFIG,
       ...config,
     };
-
-    if (!this._initialized && this._hass) {
-      this.render();
-    } else {
-      this.updatePickerValues();
-    }
   }
 
   render() {
-    if (!this._hass || !this._config || this._initialized) return;
+    if (!this.hass || !this._config) return html``;
 
-    const translations = getTranslations(this._hass);
+    const translations = getTranslations(this.hass);
 
     const fields = [
       ["entity", t(translations, "editor.mower")],
@@ -59,260 +193,313 @@ export class IndegoMowerCardEditor extends HTMLElement {
       ["text_icon", t(translations, "editor.action_layout_text_icon")],
     ];
 
-    this.innerHTML = `
-      <div style="padding:16px;">
-        ${fields
-          .map(
-            ([key, label, toggleKey]) => `
-              <div style="margin-bottom:12px;">
-                <div style="
-                  display:flex;
-                  justify-content:space-between;
-                  align-items:center;
-                  margin-bottom:4px;
-                ">
-                  <div style="font-size:14px; font-weight:500;">
-                    ${label}
-                  </div>
+    return html`
+      <div class="editor">
+        ${fields.map(([key, label, toggleKey]) =>
+          this.renderEntityField(translations, key, label, toggleKey)
+        )}
 
-                  ${
-                    toggleKey
-                      ? `
-                        <div style="display:flex; align-items:center; gap:8px;">
-                          <span style="font-size:14px; color:var(--secondary-text-color);">
-                            ${t(translations, `editor.${toggleKey}`)}
-                          </span>
-                          <ha-switch config-value="${toggleKey}"></ha-switch>
-                        </div>
-                      `
-                      : ""
-                  }
-                </div>
+        <div class="section-title">${t(translations, "editor.colors")}</div>
 
-                <ha-entity-picker
-                  config-value="${key}"
-                  allow-custom-entity
-                  style="display:block;"
-                ></ha-entity-picker>
-              </div>
-            `
-          )
-          .join("")}
-
-        <div style="margin-top:20px; margin-bottom:8px; font-size:16px; font-weight:500;">
-          ${t(translations, "editor.colors")}
-        </div>
-        
-        <div style="
-          display:grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap:12px;
-        ">
-          ${colorFields
-            .map(
-              ([key, label]) => `
-                <label style="display:block;">
-                  <div style="font-size:12px; color:var(--secondary-text-color); margin-bottom:4px;">
-                    ${label}
-                  </div>
-                  <input
-                    type="text"
-                    config-value="${key}"
-                    value="${this._config[key] || ""}"
-                    style="
-                      width:100%;
-                      box-sizing:border-box;
-                      padding:8px;
-                      border:1px solid var(--divider-color);
-                      border-radius:4px;
-                      background:var(--card-background-color);
-                      color:var(--primary-text-color);
-                    "
-                  />
-                </label>
-              `
+        <div class="grid-2">
+          ${colorFields.map(([key, label]) =>
+            this.renderTextForm(this._config[key] || "", label, (value) =>
+              this.updateSimpleConfigValue(key, value)
             )
-            .join("")}
+          )}
         </div>
 
-        <div style="margin-top:20px; margin-bottom:8px; font-size:16px; font-weight:500;">
-          ${t(translations, "editor.action_layout")}
-        </div>
-        
-        <select
-          config-value="action_layout"
-          style="
-            width:100%;
-            box-sizing:border-box;
-            padding:8px;
-            border:1px solid var(--divider-color);
-            border-radius:4px;
-            background:var(--card-background-color);
-            color:var(--primary-text-color);
-          "
-        >
-          ${actionLayoutOptions
-            .map(
-              ([value, label]) => `
-                <option value="${value}" ${
-                  (this._config.action_layout || "icon") === value ? "selected" : ""
-                }>
-                  ${label}
-                </option>
-              `
-            )
-            .join("")}
-        </select>
+        <div class="section-title">${t(translations, "editor.action_layout")}</div>
+
+        ${this.renderSelect(
+          this._config.action_layout || "icon",
+          actionLayoutOptions,
+          (value) => this.updateConfig({ action_layout: value || "icon" })
+        )}
       </div>
     `;
-
-    this.querySelectorAll("ha-entity-picker").forEach((picker) => {
-      const key = picker.getAttribute("config-value");
-
-      picker.hass = this._hass;
-
-      if (key === "entity") {
-        picker.includeDomains = ["lawn_mower"];
-      }
-
-      picker.value = this._config[key] || "";
-
-      picker.addEventListener("value-changed", (event) => {
-        const value = event.detail.value;
-        const config = { ...this._config };
-
-        if (value) {
-          config[key] = value;
-
-          if (key === "entity") {
-            const detected = autoDetectIndegoEntities(this._hass, value);
-
-            Object.entries(detected).forEach(([detectedKey, detectedValue]) => {
-              if (!config[detectedKey]) {
-                config[detectedKey] = detectedValue;
-              }
-            });
-          }
-        } else {
-          delete config[key];
-        }
-
-        this._config = config;
-        this.updatePickerValues();
-
-        this.dispatchEvent(
-          new CustomEvent("config-changed", {
-            detail: { config },
-            bubbles: true,
-            composed: true,
-          })
-        );
-      });
-    });
-
-    this.querySelectorAll('input[config-value^="theme_"]').forEach((field) => {
-      const key = field.getAttribute("config-value");
-    
-      field.addEventListener("change", (event) => {
-        const value = event.target.value?.trim();
-        const config = { ...this._config };
-    
-        if (value) {
-          config[key] = value;
-        } else {
-          delete config[key];
-        }
-    
-        this._config = config;
-    
-        this.dispatchEvent(
-          new CustomEvent("config-changed", {
-            detail: { config },
-            bubbles: true,
-            composed: true,
-          })
-        );
-      });
-    });
-
-    const actionLayoutSelect = this.querySelector('select[config-value="action_layout"]');
-
-    if (actionLayoutSelect) {
-      actionLayoutSelect.addEventListener("change", (event) => {
-        const config = {
-          ...this._config,
-          action_layout: event.target.value || "icon",
-        };
-    
-        this._config = config;
-    
-        this.dispatchEvent(
-          new CustomEvent("config-changed", {
-            detail: { config },
-            bubbles: true,
-            composed: true,
-          })
-        );
-      });
-    }
-    
-    this.querySelectorAll("ha-switch").forEach((toggle) => {
-      const key = toggle.getAttribute("config-value");
-
-      toggle.checked = this._config[key] !== false;
-
-      toggle.addEventListener("change", (event) => {
-        const config = {
-          ...this._config,
-          [key]: event.target.checked,
-        };
-
-        this._config = config;
-
-        this.dispatchEvent(
-          new CustomEvent("config-changed", {
-            detail: { config },
-            bubbles: true,
-            composed: true,
-          })
-        );
-      });
-    });
-
-    this._initialized = true;
   }
 
-  updatePickerValues() {
-    if (!this._config) return;
+  renderEntityField(translations, key, label, toggleKey) {
+    return html`
+      <div class="field entity-section">
+        <div class="field-header">
+          <div class="label">${label}</div>
 
-    this.querySelectorAll("ha-entity-picker").forEach((picker) => {
-      const key = picker.getAttribute("config-value");
-      const value = this._config[key] || "";
+          ${toggleKey
+            ? html`
+                <div class="switch-row">
+                  <span class="switch-label">
+                    ${t(translations, `editor.${toggleKey}`)}
+                  </span>
+                  <ha-switch
+                    .checked=${this._config[toggleKey] !== false}
+                    @change=${(event) =>
+                      this.updateConfig({ [toggleKey]: event.target.checked })}
+                  ></ha-switch>
+                </div>
+              `
+            : html``}
+        </div>
 
-      if (picker.value !== value) {
-        picker.value = value;
-      }
-    });
+        <ha-entity-picker
+          .hass=${this.hass}
+          .value=${this._config[key] || ""}
+          .includeDomains=${key === "entity" ? ["lawn_mower"] : undefined}
+          allow-custom-entity
+          @value-changed=${(event) => this.handleEntityChanged(key, event)}
+        ></ha-entity-picker>
 
-    this.querySelectorAll("ha-switch").forEach((toggle) => {
-      const key = toggle.getAttribute("config-value");
-      toggle.checked = this._config[key] !== false;
-    });
+        ${ACTION_FIELDS[key] ? this.renderActionSection(ACTION_FIELDS[key]) : html``}
+      </div>
+    `;
+  }
 
-    this.querySelectorAll('input[config-value^="theme_"]').forEach((field) => {
-      const key = field.getAttribute("config-value");
-      const value = this._config[key] || "";
-    
-      if (field.value !== value) {
-        field.value = value;
-      }
-    });
-    const actionLayoutSelect = this.querySelector('select[config-value="action_layout"]');
-    
-    if (actionLayoutSelect) {
-      actionLayoutSelect.value = this._config.action_layout || "icon";
+  renderActionSection(prefix) {
+    const isOpen = this._openSections[prefix] === true;
+
+    return html`
+      <button
+        type="button"
+        class="actions-toggle"
+        @click=${() => this.toggleSection(prefix)}
+      >
+        <span class="actions-toggle-label">Aktionen</span>
+        <ha-icon icon=${isOpen ? "mdi:chevron-up" : "mdi:chevron-down"}></ha-icon>
+      </button>
+
+      ${isOpen
+        ? html`
+            <div class="action-list">
+              ${this.renderActionSelect(prefix, "tap", "Tap action")}
+              ${this.renderActionSelect(prefix, "double_tap", "Double tap")}
+              ${this.renderActionSelect(prefix, "hold", "Hold action")}
+            </div>
+          `
+        : html``}
+    `;
+  }
+
+  renderActionSelect(prefix, actionType, label) {
+    const configKey = `${prefix}_${actionType}_action`;
+    const actionConfig = this._config[configKey] || {};
+    const value = actionConfig.action || (actionType === "tap" ? "more-info" : "none");
+
+    return html`
+      <div>
+        <div class="sub-label">${label}</div>
+
+        ${this.renderSelect(value, ACTION_OPTIONS, (selectedValue) =>
+          this.updateConfig({
+            [configKey]: { action: selectedValue },
+          })
+        )}
+
+        ${this.renderActionExtraFields(configKey, actionConfig, value)}
+      </div>
+    `;
+  }
+
+  renderActionExtraFields(configKey, actionConfig, action) {
+    if (action === "navigate") {
+      return html`
+        <div class="extra-fields">
+          ${this.renderTextForm(
+            actionConfig.navigation_path || "",
+            "Navigation path",
+            (value) => this.updateActionConfigValue(configKey, "navigation_path", value)
+          )}
+        </div>
+      `;
     }
+
+    if (action === "url") {
+      return html`
+        <div class="extra-fields">
+          ${this.renderTextForm(actionConfig.url_path || "", "URL path", (value) =>
+            this.updateActionConfigValue(configKey, "url_path", value)
+          )}
+        </div>
+      `;
+    }
+
+    if (action === "call-service") {
+      return html`
+        <div class="extra-fields">
+          <div>
+            <div class="sub-label">Service</div>
+            <ha-service-picker
+              .hass=${this.hass}
+              .value=${actionConfig.service || ""}
+              @value-changed=${(event) =>
+                this.updateActionConfigValue(configKey, "service", event.detail.value)}
+            ></ha-service-picker>
+          </div>
     
+          <ha-entity-picker
+            .hass=${this.hass}
+            .value=${actionConfig.target?.entity_id || ""}
+            allow-custom-entity
+            @value-changed=${(event) =>
+              this.updateActionTargetEntity(configKey, event.detail.value)}
+          ></ha-entity-picker>
+  
+        </div>
+      `;
+    }
+
+    return html``;
+  }
+
+  renderTextForm(value, label, onChange) {
+    const schema = [
+      {
+        name: "value",
+        selector: {
+          text: {},
+        },
+      },
+    ];
+
+    return html`
+      <ha-form
+        .hass=${this.hass}
+        .data=${{ value }}
+        .schema=${schema}
+        .computeLabel=${() => label}
+        @value-changed=${(event) => {
+          const nextValue = event.detail.value?.value ?? "";
+          onChange(nextValue);
+        }}
+      ></ha-form>
+    `;
+  }
+
+  renderSelect(value, options, onChange) {
+    const schema = [
+      {
+        name: "value",
+        selector: {
+          select: {
+            mode: "dropdown",
+            options: options.map(([optionValue, label]) => ({
+              value: optionValue,
+              label,
+            })),
+          },
+        },
+      },
+    ];
+
+    return html`
+      <ha-form
+        .hass=${this.hass}
+        .data=${{ value }}
+        .schema=${schema}
+        .computeLabel=${() => ""}
+        @value-changed=${(event) => {
+          const selectedValue = event.detail.value?.value;
+
+          if (selectedValue !== undefined && selectedValue !== value) {
+            onChange(selectedValue);
+          }
+        }}
+      ></ha-form>
+    `;
+  }
+
+  handleEntityChanged(key, event) {
+    const value = event.detail.value;
+    const config = { ...this._config };
+
+    if (value) {
+      config[key] = value;
+
+      if (key === "entity") {
+        const detected = autoDetectIndegoEntities(this.hass, value);
+
+        Object.entries(detected).forEach(([detectedKey, detectedValue]) => {
+          if (!config[detectedKey]) {
+            config[detectedKey] = detectedValue;
+          }
+        });
+      }
+    } else {
+      delete config[key];
+    }
+
+    this.setAndDispatchConfig(config);
+  }
+
+  toggleSection(prefix) {
+    this._openSections = {
+      ...this._openSections,
+      [prefix]: this._openSections[prefix] !== true,
+    };
+  }
+
+  updateSimpleConfigValue(key, value) {
+    const config = { ...this._config };
+    const cleanValue = value?.trim();
+
+    if (cleanValue) {
+      config[key] = cleanValue;
+    } else {
+      delete config[key];
+    }
+
+    this.setAndDispatchConfig(config);
+  }
+
+  updateActionConfigValue(configKey, field, value) {
+    const config = { ...this._config };
+    const actionConfig = { ...(config[configKey] || {}) };
+    const cleanValue = value?.trim();
+
+    if (cleanValue) {
+      actionConfig[field] = cleanValue;
+    } else {
+      delete actionConfig[field];
+    }
+
+    config[configKey] = actionConfig;
+    this.setAndDispatchConfig(config);
+  }
+
+  updateActionTargetEntity(configKey, entityId) {
+    const config = { ...this._config };
+    const actionConfig = { ...(config[configKey] || {}) };
+  
+    if (entityId) {
+      actionConfig.target = {
+        ...(actionConfig.target || {}),
+        entity_id: entityId,
+      };
+    } else {
+      delete actionConfig.target;
+    }
+  
+    config[configKey] = actionConfig;
+    this.setAndDispatchConfig(config);
+  }
+
+  updateConfig(changes) {
+    this.setAndDispatchConfig({
+      ...this._config,
+      ...changes,
+    });
+  }
+
+  setAndDispatchConfig(config) {
+    this._config = config;
+
+    this.dispatchEvent(
+      new CustomEvent("config-changed", {
+        detail: { config },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 }
 
