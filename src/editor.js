@@ -328,16 +328,20 @@ export class IndegoMowerCardEditor extends LitElement {
           ${this.renderTextForm(actionConfig.service || "", "Service", (value) =>
             this.updateActionConfigValue(configKey, "service", value)
           )}
-
-          <div>
-            <div class="sub-label">Service data JSON</div>
-            <textarea
-              .value=${this.stringifyServiceData(actionConfig.service_data)}
-              placeholder='{"entity_id":"switch.example"}'
-              @change=${(event) =>
-                this.updateServiceData(configKey, event.target.value)}
-            ></textarea>
-          </div>
+    
+          <ha-entity-picker
+            .hass=${this.hass}
+            .value=${actionConfig.target?.entity_id || ""}
+            allow-custom-entity
+            @value-changed=${(event) =>
+              this.updateActionTargetEntity(configKey, event.detail.value)}
+          ></ha-entity-picker>
+    
+          ${this.renderTextForm(
+            actionConfig.data?.entity_id || "",
+            "Data entity_id optional",
+            (value) => this.updateActionDataValue(configKey, "entity_id", value)
+          )}
         </div>
       `;
     }
@@ -460,36 +464,43 @@ export class IndegoMowerCardEditor extends LitElement {
     this.setAndDispatchConfig(config);
   }
 
-  updateServiceData(configKey, value) {
-    const cleanValue = value?.trim();
-
-    if (!cleanValue) {
-      this.updateActionConfigValue(configKey, "service_data", "");
-      return;
+  updateActionTargetEntity(configKey, entityId) {
+    const config = { ...this._config };
+    const actionConfig = { ...(config[configKey] || {}) };
+  
+    if (entityId) {
+      actionConfig.target = {
+        ...(actionConfig.target || {}),
+        entity_id: entityId,
+      };
+    } else {
+      delete actionConfig.target;
     }
-
-    try {
-      const parsed = JSON.parse(cleanValue);
-      const config = { ...this._config };
-      const actionConfig = { ...(config[configKey] || {}) };
-
-      actionConfig.service_data = parsed;
-      config[configKey] = actionConfig;
-
-      this.setAndDispatchConfig(config);
-    } catch {
-      // Invalid JSON is not saved.
-    }
+  
+    config[configKey] = actionConfig;
+    this.setAndDispatchConfig(config);
   }
-
-  stringifyServiceData(serviceData) {
-    if (!serviceData) return "";
-
-    try {
-      return JSON.stringify(serviceData, null, 2);
-    } catch {
-      return "";
+  
+  updateActionDataValue(configKey, field, value) {
+    const config = { ...this._config };
+    const actionConfig = { ...(config[configKey] || {}) };
+    const cleanValue = value?.trim();
+  
+    if (cleanValue) {
+      actionConfig.data = {
+        ...(actionConfig.data || {}),
+        [field]: cleanValue,
+      };
+    } else if (actionConfig.data) {
+      delete actionConfig.data[field];
+  
+      if (!Object.keys(actionConfig.data).length) {
+        delete actionConfig.data;
+      }
     }
+  
+    config[configKey] = actionConfig;
+    this.setAndDispatchConfig(config);
   }
 
   updateConfig(changes) {
