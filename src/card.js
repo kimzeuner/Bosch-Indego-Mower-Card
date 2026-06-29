@@ -155,6 +155,7 @@ export class IndegoMowerCard extends LitElement {
               battery,
               batteryPct,
               charging,
+              entityId: this.config.battery_entity,
             })
           : html``}
         
@@ -181,15 +182,27 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
 
-  renderBatteryHeader({ translations, mowerState, battery, batteryPct, charging }) {
+  renderBatteryHeader({ translations, mowerState, battery, batteryPct, charging, entityId }) {
     if (mowerState === "docked" || !battery) {
       return html``;
     }
   
+    const actionConfigs = {
+      tap: this.config.battery_tap_action,
+      double_tap: this.config.battery_double_tap_action,
+      hold: this.config.battery_hold_action,
+    };
+  
     return html`
       <div class="header">
         <div
-          class="battery"
+          class="battery clickable"
+          @click=${() => this.handleTap(entityId, actionConfigs)}
+          @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
+          @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
+          @pointerup=${() => this.handleHoldEnd()}
+          @pointerleave=${() => this.handleHoldEnd()}
+          @pointercancel=${() => this.handleHoldEnd()}
           style="
             background: linear-gradient(
               90deg,
@@ -206,7 +219,7 @@ export class IndegoMowerCard extends LitElement {
       </div>
     `;
   }
-
+  
   fireHassAction(entityId, actionConfigs, action) {
     this.dispatchEvent(
       new CustomEvent("hass-action", {
