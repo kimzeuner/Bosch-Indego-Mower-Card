@@ -162,7 +162,7 @@ export class IndegoMowerCardEditor extends LitElement {
 
         <div class="section-title">${t(translations, "editor.action_layout")}</div>
 
-        ${this.renderSelect(
+        ${this.
           this._config.action_layout || "icon",
           actionLayoutOptions,
           (value) => this.updateConfig({ action_layout: value || "icon" })
@@ -225,7 +225,7 @@ export class IndegoMowerCardEditor extends LitElement {
     return html`
       <div>
         <div class="sub-label">${label}</div>
-        ${this.renderSelect(value, ACTION_OPTIONS, (selectedValue) =>
+        ${this.value, ACTION_OPTIONS, (selectedValue) =>
           this.updateConfig({
             [configKey]: { action: selectedValue },
           })
@@ -271,13 +271,18 @@ export class IndegoMowerCardEditor extends LitElement {
             <mwc-list-item
               .value=${optionValue}
               ?selected=${value === optionValue}
-              @click=${(event) => {
+              @request-selected=${(event) => {
+                event.stopPropagation();
                 onChange(optionValue);
   
-                const select = event.target.closest("ha-select");
-                if (select) {
-                  select.open = false;
-                }
+                const select = event.currentTarget.closest("ha-select");
+  
+                requestAnimationFrame(() => {
+                  if (select) {
+                    select.open = false;
+                    select.blur();
+                  }
+                });
               }}
             >
               ${label}
