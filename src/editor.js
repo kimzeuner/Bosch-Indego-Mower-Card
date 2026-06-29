@@ -98,10 +98,20 @@ export class IndegoMowerCardEditor extends LitElement {
       font-weight: 500;
     }
 
-    .action-grid {
+    .entity-section {
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--divider-color);
+    }
+    
+    .entity-section:last-of-type {
+      border-bottom: 0;
+    }
+    
+    .action-list {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
+      grid-template-columns: 1fr;
+      gap: 12px;
       margin-top: 4px;
     }
 
@@ -211,7 +221,7 @@ export class IndegoMowerCardEditor extends LitElement {
 
   renderEntityField(translations, key, label, toggleKey) {
     return html`
-      <div class="field">
+      <div class="field entity-section">
         <div class="field-header">
           <div class="label">${label}</div>
 
@@ -254,12 +264,12 @@ export class IndegoMowerCardEditor extends LitElement {
         @click=${() => this.toggleSection(prefix)}
       >
         <span class="actions-toggle-label">Aktionen</span>
-        <ha-icon icon=${isOpen ? "mdi:chevron-up" : "mdi:chevron-right"}></ha-icon>
+        <ha-icon icon=${isOpen ? "mdi:chevron-up" : "mdi:chevron-down"}></ha-icon>
       </button>
 
       ${isOpen
         ? html`
-            <div class="action-grid">
+            <div class="action-list">
               ${this.renderActionSelect(prefix, "tap", "Tap action")}
               ${this.renderActionSelect(prefix, "double_tap", "Double tap")}
               ${this.renderActionSelect(prefix, "hold", "Hold action")}
