@@ -271,7 +271,14 @@ export class IndegoMowerCardEditor extends LitElement {
             <mwc-list-item
               .value=${optionValue}
               ?selected=${value === optionValue}
-              @click=${() => onChange(optionValue)}
+              @click=${(event) => {
+                onChange(optionValue);
+  
+                const select = event.target.closest("ha-select");
+                if (select) {
+                  select.open = false;
+                }
+              }}
             >
               ${label}
             </mwc-list-item>
