@@ -122,7 +122,8 @@ export class IndegoMowerCardEditor extends LitElement {
     }
 
     ha-form,
-    ha-entity-picker {
+    ha-entity-picker,
+    ha-service-picker {
       display: block;
       width: 100%;
     }
@@ -325,9 +326,15 @@ export class IndegoMowerCardEditor extends LitElement {
     if (action === "call-service") {
       return html`
         <div class="extra-fields">
-          ${this.renderTextForm(actionConfig.service || "", "Service", (value) =>
-            this.updateActionConfigValue(configKey, "service", value)
-          )}
+          <div>
+            <div class="sub-label">Service</div>
+            <ha-service-picker
+              .hass=${this.hass}
+              .value=${actionConfig.service || ""}
+              @value-changed=${(event) =>
+                this.updateActionConfigValue(configKey, "service", event.detail.value)}
+            ></ha-service-picker>
+          </div>
     
           <ha-entity-picker
             .hass=${this.hass}
@@ -336,12 +343,7 @@ export class IndegoMowerCardEditor extends LitElement {
             @value-changed=${(event) =>
               this.updateActionTargetEntity(configKey, event.detail.value)}
           ></ha-entity-picker>
-    
-          ${this.renderTextForm(
-            actionConfig.data?.entity_id || "",
-            "Data entity_id optional",
-            (value) => this.updateActionDataValue(configKey, "entity_id", value)
-          )}
+  
         </div>
       `;
     }
@@ -475,28 +477,6 @@ export class IndegoMowerCardEditor extends LitElement {
       };
     } else {
       delete actionConfig.target;
-    }
-  
-    config[configKey] = actionConfig;
-    this.setAndDispatchConfig(config);
-  }
-  
-  updateActionDataValue(configKey, field, value) {
-    const config = { ...this._config };
-    const actionConfig = { ...(config[configKey] || {}) };
-    const cleanValue = value?.trim();
-  
-    if (cleanValue) {
-      actionConfig.data = {
-        ...(actionConfig.data || {}),
-        [field]: cleanValue,
-      };
-    } else if (actionConfig.data) {
-      delete actionConfig.data[field];
-  
-      if (!Object.keys(actionConfig.data).length) {
-        delete actionConfig.data;
-      }
     }
   
     config[configKey] = actionConfig;
