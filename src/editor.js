@@ -264,24 +264,26 @@ export class IndegoMowerCardEditor extends LitElement {
   }
 
   renderSelect(value, options, onChange) {
+    const schema = [
+      {
+        name: "value",
+        selector: {
+          select: {
+            mode: "dropdown",
+            options: options.map(([optionValue, label]) => ({
+              value: optionValue,
+              label,
+            })),
+          },
+        },
+      },
+    ];
+  
     return html`
       <ha-form
         .hass=${this.hass}
         .data=${{ value }}
-        .schema=${[
-          {
-            name: "value",
-            selector: {
-              select: {
-                mode: "dropdown",
-                options: options.map(([optionValue, label]) => ({
-                  value: optionValue,
-                  label,
-                })),
-              },
-            },
-          },
-        ]}
+        .schema=${schema}
         .computeLabel=${() => ""}
         @value-changed=${(event) => {
           const selectedValue = event.detail.value?.value;
