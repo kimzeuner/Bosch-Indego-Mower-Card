@@ -54,9 +54,14 @@ export class IndegoMowerCardEditor extends LitElement {
       gap: 8px;
     }
 
-    .switch-label {
-      font-size: 14px;
+    .switch-label,
+    .sub-label {
+      font-size: 12px;
       color: var(--secondary-text-color);
+    }
+
+    .sub-label {
+      margin-bottom: 4px;
     }
 
     .section-title {
@@ -79,17 +84,21 @@ export class IndegoMowerCardEditor extends LitElement {
       margin-top: 10px;
     }
 
-    .sub-label {
-      font-size: 12px;
-      color: var(--secondary-text-color);
-      margin-bottom: 4px;
-    }
-
     ha-entity-picker,
-    ha-select,
-    ha-textfield {
+    ha-select {
       display: block;
       width: 100%;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border: 1px solid var(--divider-color);
+      border-radius: 4px;
+      background: var(--card-background-color);
+      color: var(--primary-text-color);
+      font: inherit;
     }
 
     @media (max-width: 600px) {
@@ -108,9 +117,7 @@ export class IndegoMowerCardEditor extends LitElement {
   }
 
   render() {
-    if (!this.hass || !this._config) {
-      return html``;
-    }
+    if (!this.hass || !this._config) return html``;
 
     const translations = getTranslations(this.hass);
 
@@ -147,20 +154,15 @@ export class IndegoMowerCardEditor extends LitElement {
           this.renderEntityField(translations, key, label, toggleKey)
         )}
 
-        <div class="section-title">
-          ${t(translations, "editor.colors")}
-        </div>
+        <div class="section-title">${t(translations, "editor.colors")}</div>
 
         <div class="grid-2">
           ${colorFields.map(([key, label]) => this.renderTextField(key, label))}
         </div>
 
-        <div class="section-title">
-          ${t(translations, "editor.action_layout")}
-        </div>
+        <div class="section-title">${t(translations, "editor.action_layout")}</div>
 
         ${this.renderSelect(
-          "action_layout",
           this._config.action_layout || "icon",
           actionLayoutOptions,
           (value) => this.updateConfig({ action_layout: value || "icon" })
@@ -216,16 +218,16 @@ export class IndegoMowerCardEditor extends LitElement {
 
   renderActionSelect(prefix, actionType, label) {
     const configKey = `${prefix}_${actionType}_action`;
-    const value = this.getActionValue(configKey, actionType);
+    const value =
+      this._config[configKey]?.action ||
+      (actionType === "tap" ? "more-info" : "none");
 
     return html`
       <div>
         <div class="sub-label">${label}</div>
-        ${this.renderSelect(configKey, value, ACTION_OPTIONS, (selectedValue) =>
+        ${this.renderSelect(value, ACTION_OPTIONS, (selectedValue) =>
           this.updateConfig({
-            [configKey]: {
-              action: selectedValue,
-            },
+            [configKey]: { action: selectedValue },
           })
         )}
       </div>
@@ -234,33 +236,49 @@ export class IndegoMowerCardEditor extends LitElement {
 
   renderTextField(key, label) {
     return html`
-      <ha-textfield
-        .label=${label}
-        .value=${this._config[key] || ""}
-        @change=${(event) => {
-          const value = event.target.value?.trim();
-          const config = { ...this._config };
+      <label>
+        <div class="sub-label">${label}</div>
+        <input
+          type="text"
+          .value=${this._config[key] || ""}
+          @change=${(event) => {
+            const value = event.target.value?.trim();
+            const config = { ...this._config };
 
-          if (value) {
-            config[key] = value;
-          } else {
-            delete config[key];
-          }
+            if (value) {
+              config[key] = value;
+            } else {
+              delete config[key];
+            }
 
-          this.setAndDispatchConfig(config);
-        }}
-      ></ha-textfield>
+            this.setAndDispatchConfig(config);
+          }}
+        />
+      </label>
     `;
   }
 
-  renderSelect(key, value, options, onChange) {
+  renderSelect(value, options, onChange) {
     return html`
       <ha-select
         .value=${value}
         naturalMenuWidth
         fixedMenuPosition
-        @selected=${(event) =>
-          onChange(event.target.value || event.detail?.item?.value)}
+        @selected=${(event) => {
+          const index = event.detail?.index;
+          const selectedValue =
+            event.target.value ||
+            (Number.isInteger(index) ? options[index]?.[0] : undefined);
+
+          if (selectedValue !== undefined) {
+            onChange(selectedValue);
+          }
+        }}
+        @change=${(event) => {
+          if (event.target.value !== undefined) {
+            onChange(event.target.value);
+          }
+        }}
         @closed=${(event) => event.stopPropagation()}
       >
         ${options.map(
@@ -298,13 +316,6 @@ export class IndegoMowerCardEditor extends LitElement {
     }
 
     this.setAndDispatchConfig(config);
-  }
-
-  getActionValue(configKey, actionType) {
-    return (
-      this._config[configKey]?.action ||
-      (actionType === "tap" ? "more-info" : "none")
-    );
   }
 
   updateConfig(changes) {
