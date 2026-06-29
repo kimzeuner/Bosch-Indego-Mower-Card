@@ -24,6 +24,7 @@ export class IndegoMowerCardEditor extends LitElement {
   static properties = {
     hass: { attribute: false },
     _config: { state: true },
+    _openSections: { state: true },
   };
 
   static styles = css`
@@ -31,25 +32,31 @@ export class IndegoMowerCardEditor extends LitElement {
       padding: 16px;
     }
 
-    ha-form {
-      display: block;
-      width: 100%;
-    }
-
     .field {
       margin-bottom: 16px;
     }
 
-    .field-header {
+    .field-header,
+    .actions-toggle {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
       gap: 12px;
+    }
+
+    .field-header {
+      margin-bottom: 6px;
     }
 
     .label {
       font-size: 14px;
+      font-weight: 500;
+    }
+
+    .section-title {
+      margin-top: 24px;
+      margin-bottom: 12px;
+      font-size: 16px;
       font-weight: 500;
     }
 
@@ -69,34 +76,50 @@ export class IndegoMowerCardEditor extends LitElement {
       margin-bottom: 4px;
     }
 
-    .section-title {
-      margin-top: 24px;
-      margin-bottom: 12px;
-      font-size: 16px;
-      font-weight: 500;
-    }
-
     .grid-2 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
 
+    .actions-toggle {
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px 0;
+      border: 0;
+      background: transparent;
+      color: var(--primary-text-color);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .actions-toggle-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
     .action-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
-      margin-top: 10px;
+      margin-top: 4px;
     }
 
-    ha-entity-picker,
-    ha-select {
+    .extra-fields {
+      margin-top: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    ha-form,
+    ha-entity-picker {
       display: block;
       width: 100%;
     }
 
-    input {
+    textarea {
       width: 100%;
+      min-height: 76px;
       box-sizing: border-box;
       padding: 8px;
       border: 1px solid var(--divider-color);
@@ -104,6 +127,7 @@ export class IndegoMowerCardEditor extends LitElement {
       background: var(--card-background-color);
       color: var(--primary-text-color);
       font: inherit;
+      resize: vertical;
     }
 
     @media (max-width: 600px) {
@@ -113,6 +137,11 @@ export class IndegoMowerCardEditor extends LitElement {
       }
     }
   `;
+
+  constructor() {
+    super();
+    this._openSections = {};
+  }
 
   setConfig(config) {
     this._config = {
@@ -162,7 +191,11 @@ export class IndegoMowerCardEditor extends LitElement {
         <div class="section-title">${t(translations, "editor.colors")}</div>
 
         <div class="grid-2">
-          ${colorFields.map(([key, label]) => this.renderTextField(key, label))}
+          ${colorFields.map(([key, label]) =>
+            this.renderTextForm(this._config[key] || "", label, (value) =>
+              this.updateSimpleConfigValue(key, value)
+            )
+          )}
         </div>
 
         <div class="section-title">${t(translations, "editor.action_layout")}</div>
@@ -206,60 +239,123 @@ export class IndegoMowerCardEditor extends LitElement {
           @value-changed=${(event) => this.handleEntityChanged(key, event)}
         ></ha-entity-picker>
 
-        ${ACTION_FIELDS[key] ? this.renderActionControls(ACTION_FIELDS[key]) : html``}
+        ${ACTION_FIELDS[key] ? this.renderActionSection(ACTION_FIELDS[key]) : html``}
       </div>
     `;
   }
 
-  renderActionControls(prefix) {
+  renderActionSection(prefix) {
+    const isOpen = this._openSections[prefix] === true;
+
     return html`
-      <div class="action-grid">
-        ${this.renderActionSelect(prefix, "tap", "Tap action")}
-        ${this.renderActionSelect(prefix, "double_tap", "Double tap")}
-        ${this.renderActionSelect(prefix, "hold", "Hold action")}
-      </div>
+      <button
+        type="button"
+        class="actions-toggle"
+        @click=${() => this.toggleSection(prefix)}
+      >
+        <span class="actions-toggle-label">Aktionen</span>
+        <ha-icon icon=${isOpen ? "mdi:chevron-up" : "mdi:chevron-right"}></ha-icon>
+      </button>
+
+      ${isOpen
+        ? html`
+            <div class="action-grid">
+              ${this.renderActionSelect(prefix, "tap", "Tap action")}
+              ${this.renderActionSelect(prefix, "double_tap", "Double tap")}
+              ${this.renderActionSelect(prefix, "hold", "Hold action")}
+            </div>
+          `
+        : html``}
     `;
   }
 
   renderActionSelect(prefix, actionType, label) {
     const configKey = `${prefix}_${actionType}_action`;
-    const value =
-      this._config[configKey]?.action ||
-      (actionType === "tap" ? "more-info" : "none");
+    const actionConfig = this._config[configKey] || {};
+    const value = actionConfig.action || (actionType === "tap" ? "more-info" : "none");
 
     return html`
       <div>
         <div class="sub-label">${label}</div>
+
         ${this.renderSelect(value, ACTION_OPTIONS, (selectedValue) =>
           this.updateConfig({
             [configKey]: { action: selectedValue },
           })
         )}
+
+        ${this.renderActionExtraFields(configKey, actionConfig, value)}
       </div>
     `;
   }
 
-  renderTextField(key, label) {
+  renderActionExtraFields(configKey, actionConfig, action) {
+    if (action === "navigate") {
+      return html`
+        <div class="extra-fields">
+          ${this.renderTextForm(
+            actionConfig.navigation_path || "",
+            "Navigation path",
+            (value) => this.updateActionConfigValue(configKey, "navigation_path", value)
+          )}
+        </div>
+      `;
+    }
+
+    if (action === "url") {
+      return html`
+        <div class="extra-fields">
+          ${this.renderTextForm(actionConfig.url_path || "", "URL path", (value) =>
+            this.updateActionConfigValue(configKey, "url_path", value)
+          )}
+        </div>
+      `;
+    }
+
+    if (action === "call-service") {
+      return html`
+        <div class="extra-fields">
+          ${this.renderTextForm(actionConfig.service || "", "Service", (value) =>
+            this.updateActionConfigValue(configKey, "service", value)
+          )}
+
+          <div>
+            <div class="sub-label">Service data JSON</div>
+            <textarea
+              .value=${this.stringifyServiceData(actionConfig.service_data)}
+              placeholder='{"entity_id":"switch.example"}'
+              @change=${(event) =>
+                this.updateServiceData(configKey, event.target.value)}
+            ></textarea>
+          </div>
+        </div>
+      `;
+    }
+
+    return html``;
+  }
+
+  renderTextForm(value, label, onChange) {
+    const schema = [
+      {
+        name: "value",
+        selector: {
+          text: {},
+        },
+      },
+    ];
+
     return html`
-      <label>
-        <div class="sub-label">${label}</div>
-        <input
-          type="text"
-          .value=${this._config[key] || ""}
-          @change=${(event) => {
-            const value = event.target.value?.trim();
-            const config = { ...this._config };
-
-            if (value) {
-              config[key] = value;
-            } else {
-              delete config[key];
-            }
-
-            this.setAndDispatchConfig(config);
-          }}
-        />
-      </label>
+      <ha-form
+        .hass=${this.hass}
+        .data=${{ value }}
+        .schema=${schema}
+        .computeLabel=${() => label}
+        @value-changed=${(event) => {
+          const nextValue = event.detail.value?.value ?? "";
+          onChange(nextValue);
+        }}
+      ></ha-form>
     `;
   }
 
@@ -278,7 +374,7 @@ export class IndegoMowerCardEditor extends LitElement {
         },
       },
     ];
-  
+
     return html`
       <ha-form
         .hass=${this.hass}
@@ -287,7 +383,7 @@ export class IndegoMowerCardEditor extends LitElement {
         .computeLabel=${() => ""}
         @value-changed=${(event) => {
           const selectedValue = event.detail.value?.value;
-  
+
           if (selectedValue !== undefined && selectedValue !== value) {
             onChange(selectedValue);
           }
@@ -317,6 +413,73 @@ export class IndegoMowerCardEditor extends LitElement {
     }
 
     this.setAndDispatchConfig(config);
+  }
+
+  toggleSection(prefix) {
+    this._openSections = {
+      ...this._openSections,
+      [prefix]: this._openSections[prefix] !== true,
+    };
+  }
+
+  updateSimpleConfigValue(key, value) {
+    const config = { ...this._config };
+    const cleanValue = value?.trim();
+
+    if (cleanValue) {
+      config[key] = cleanValue;
+    } else {
+      delete config[key];
+    }
+
+    this.setAndDispatchConfig(config);
+  }
+
+  updateActionConfigValue(configKey, field, value) {
+    const config = { ...this._config };
+    const actionConfig = { ...(config[configKey] || {}) };
+    const cleanValue = value?.trim();
+
+    if (cleanValue) {
+      actionConfig[field] = cleanValue;
+    } else {
+      delete actionConfig[field];
+    }
+
+    config[configKey] = actionConfig;
+    this.setAndDispatchConfig(config);
+  }
+
+  updateServiceData(configKey, value) {
+    const cleanValue = value?.trim();
+
+    if (!cleanValue) {
+      this.updateActionConfigValue(configKey, "service_data", "");
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(cleanValue);
+      const config = { ...this._config };
+      const actionConfig = { ...(config[configKey] || {}) };
+
+      actionConfig.service_data = parsed;
+      config[configKey] = actionConfig;
+
+      this.setAndDispatchConfig(config);
+    } catch {
+      // Invalid JSON is not saved.
+    }
+  }
+
+  stringifyServiceData(serviceData) {
+    if (!serviceData) return "";
+
+    try {
+      return JSON.stringify(serviceData, null, 2);
+    } catch {
+      return "";
+    }
   }
 
   updateConfig(changes) {
