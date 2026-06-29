@@ -32,7 +32,21 @@
     "action_layout_icon": "Icon only",
     "action_layout_text": "Text only",
     "action_layout_icon_text": "Icon + text",
-    "action_layout_text_icon": "Text + icon"
+    "action_layout_text_icon": "Text + icon",
+    "actions": "Actions",
+    "tap_action": "Tap",
+    "double_tap_action": "Double tap",
+    "hold_action": "Hold",
+    "action_more_info": "More information",
+    "action_navigate": "Navigate",
+    "action_url": "Open URL",
+    "action_call_service": "Perform action",
+    "action_assist": "Assist",
+    "action_none": "No action",
+    "navigation_path": "Navigation path",
+    "url_path": "URL",
+    "service": "Action",
+    "target_entity": "Target entity"
   },
   "actions": {
     "start": "Start",
