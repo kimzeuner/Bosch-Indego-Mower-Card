@@ -264,21 +264,6 @@ export class IndegoMowerCardEditor extends LitElement {
         .value=${value}
         naturalMenuWidth
         fixedMenuPosition
-        @selected=${(event) => {
-          const index = event.detail?.index;
-          const selectedValue =
-            event.target.value ||
-            (Number.isInteger(index) ? options[index]?.[0] : undefined);
-
-          if (selectedValue !== undefined) {
-            onChange(selectedValue);
-          }
-        }}
-        @change=${(event) => {
-          if (event.target.value !== undefined) {
-            onChange(event.target.value);
-          }
-        }}
         @closed=${(event) => event.stopPropagation()}
       >
         ${options.map(
@@ -286,6 +271,7 @@ export class IndegoMowerCardEditor extends LitElement {
             <mwc-list-item
               .value=${optionValue}
               ?selected=${value === optionValue}
+              @click=${() => onChange(optionValue)}
             >
               ${label}
             </mwc-list-item>
