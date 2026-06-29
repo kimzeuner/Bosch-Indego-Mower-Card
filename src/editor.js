@@ -59,6 +59,24 @@ export class IndegoMowerCardEditor extends HTMLElement {
       ["text_icon", t(translations, "editor.action_layout_text_icon")],
     ];
 
+    const actionOptions = [
+      ["more-info", "More info"],
+      ["navigate", "Navigate"],
+      ["url", "URL"],
+      ["call-service", "Call service"],
+      ["assist", "Assist"],
+      ["none", "None"],
+    ];
+    
+    const actionFields = {
+      map_entity: "map",
+      battery_entity: "battery",
+      state_detail_entity: "status",
+      mowed_entity: "mowed",
+      stuck_entity: "stuck",
+      alert_entity: "alerts",
+    };
+
     this.innerHTML = `
       <div style="padding:16px;">
         ${fields
@@ -94,6 +112,67 @@ export class IndegoMowerCardEditor extends HTMLElement {
                   allow-custom-entity
                   style="display:block;"
                 ></ha-entity-picker>
+                
+                ${
+                  actionFields[key]
+                    ? `
+                      <div style="
+                        display:grid;
+                        grid-template-columns: repeat(3, minmax(0, 1fr));
+                        gap:8px;
+                        margin-top:8px;
+                      ">
+                        ${["tap", "double_tap", "hold"]
+                          .map((actionType) => {
+                            const configKey = `${actionFields[key]}_${actionType}_action`;
+                            const currentAction =
+                              this._config[configKey]?.action ||
+                              (actionType === "tap" ? "more-info" : "none");
+                
+                            const label =
+                              actionType === "tap"
+                                ? "Tap action"
+                                : actionType === "double_tap"
+                                  ? "Double tap"
+                                  : "Hold action";
+                
+                            return `
+                              <label style="display:block;">
+                                <div style="font-size:12px; color:var(--secondary-text-color); margin-bottom:4px;">
+                                  ${label}
+                                </div>
+                                <select
+                                  config-value="${configKey}"
+                                  style="
+                                    width:100%;
+                                    box-sizing:border-box;
+                                    padding:8px;
+                                    border:1px solid var(--divider-color);
+                                    border-radius:4px;
+                                    background:var(--card-background-color);
+                                    color:var(--primary-text-color);
+                                  "
+                                >
+                                  ${actionOptions
+                                    .map(
+                                      ([value, label]) => `
+                                        <option value="${value}" ${
+                                          currentAction === value ? "selected" : ""
+                                        }>
+                                          ${label}
+                                        </option>
+                                      `
+                                    )
+                                    .join("")}
+                                </select>
+                              </label>
+                            `;
+                          })
+                          .join("")}
+                      </div>
+                    `
+                    : ""
+                }
               </div>
             `
           )
@@ -235,6 +314,27 @@ export class IndegoMowerCardEditor extends HTMLElement {
       });
     });
 
+    this.querySelectorAll('select[config-value$="_action"]').forEach((select) => {
+      const key = select.getAttribute("config-value");
+    
+      select.addEventListener("change", (event) => {
+        const action = event.target.value;
+        const config = { ...this._config };
+    
+        config[key] = { action };
+    
+        this._config = config;
+    
+        this.dispatchEvent(
+          new CustomEvent("config-changed", {
+            detail: { config },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      });
+    });
+    
     const actionLayoutSelect = this.querySelector('select[config-value="action_layout"]');
 
     if (actionLayoutSelect) {
@@ -313,6 +413,14 @@ export class IndegoMowerCardEditor extends HTMLElement {
       actionLayoutSelect.value = this._config.action_layout || "icon";
     }
     
+    this.querySelectorAll('select[config-value$="_action"]').forEach((select) => {
+      const key = select.getAttribute("config-value");
+      const isTap = key.includes("_tap_action") && !key.includes("_double_tap_action");
+    
+      select.value =
+        this._config[key]?.action ||
+        (isTap ? "more-info" : "none");
+    });
   }
 }
 
