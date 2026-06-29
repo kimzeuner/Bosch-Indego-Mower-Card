@@ -167,7 +167,7 @@ export class IndegoMowerCardEditor extends LitElement {
 
         <div class="section-title">${t(translations, "editor.action_layout")}</div>
 
-        ${this.
+        ${this.renderSelect(
           this._config.action_layout || "icon",
           actionLayoutOptions,
           (value) => this.updateConfig({ action_layout: value || "icon" })
@@ -230,7 +230,7 @@ export class IndegoMowerCardEditor extends LitElement {
     return html`
       <div>
         <div class="sub-label">${label}</div>
-        ${this.value, ACTION_OPTIONS, (selectedValue) =>
+        ${this.renderSelect(value, ACTION_OPTIONS, (selectedValue) =>
           this.updateConfig({
             [configKey]: { action: selectedValue },
           })
