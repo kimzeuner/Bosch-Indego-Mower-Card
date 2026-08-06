@@ -24,17 +24,16 @@ export const CARD_STYLES = `
   }
   
   .image {
-    position: absolute;
-    width: var(--map-image-width, 100%);
-    max-width: none;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
     display: block;
     cursor: pointer;
-    transform: rotate(var(--map-rotation, 0deg));
+    transform:
+      rotate(var(--map-rotation, 0deg))
+      scale(var(--map-scale, 1));
     transform-origin: center center;
-    transition:
-      transform 0.2s ease,
-      width 0.2s ease;
+    transition: transform 0.2s ease;
   }
 
   .status {
