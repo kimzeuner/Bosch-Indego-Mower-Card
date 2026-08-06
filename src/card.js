@@ -32,12 +32,18 @@ export class IndegoMowerCard extends LitElement {
   static properties = {
     hass: {},
     config: { state: true },
+    _mapAspectRatio: { state: true },
   };
 
   static styles = css`
     ${unsafeCSS(CARD_STYLES)}
   `;
 
+  constructor() {
+    super();
+    this._mapAspectRatio = 1;
+  }
+  
   static getConfigElement() {
     return document.createElement("indego-mower-card-editor");
   }
@@ -277,6 +283,7 @@ export class IndegoMowerCard extends LitElement {
     }
   
     const rotation = Number(this.config.map_rotation) || 0;
+    const geometry = this.getRotatedMapGeometry(rotation);
   
     const actionConfigs = {
       tap: this.config.map_tap_action,
@@ -284,19 +291,20 @@ export class IndegoMowerCard extends LitElement {
       hold: this.config.map_hold_action,
     };
   
-    const normalizedRotation = ((rotation % 360) + 360) % 360;
-    const swapsDimensions =
-      normalizedRotation === 90 || normalizedRotation === 270;
-  
     return html`
       <div
-        class="image-container ${swapsDimensions ? "swapped" : ""}"
-        style="--map-rotation:${rotation}deg;"
+        class="image-container"
+        style="
+          --map-rotation: ${rotation}deg;
+          --map-container-ratio: ${geometry.containerAspectRatio};
+          --map-image-width: ${geometry.imageWidthPercent}%;
+        "
       >
         <img
           class="image"
           src="${imageUrl}"
           alt="Mower map"
+          @load=${(event) => this.handleMapImageLoad(event)}
           @click=${() => this.handleTap(entityId, actionConfigs)}
           @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
           @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
@@ -306,6 +314,41 @@ export class IndegoMowerCard extends LitElement {
         />
       </div>
     `;
+  }
+
+  handleMapImageLoad(event) {
+    const image = event.currentTarget;
+  
+    if (!image?.naturalWidth || !image?.naturalHeight) {
+      return;
+    }
+  
+    const aspectRatio = image.naturalWidth / image.naturalHeight;
+  
+    if (this._mapAspectRatio !== aspectRatio) {
+      this._mapAspectRatio = aspectRatio;
+    }
+  }
+  
+  getRotatedMapGeometry(rotation) {
+    const angle = ((rotation % 360) + 360) % 360;
+    const radians = (angle * Math.PI) / 180;
+  
+    const width = this._mapAspectRatio || 1;
+    const height = 1;
+  
+    const rotatedWidth =
+      Math.abs(width * Math.cos(radians)) +
+      Math.abs(height * Math.sin(radians));
+  
+    const rotatedHeight =
+      Math.abs(width * Math.sin(radians)) +
+      Math.abs(height * Math.cos(radians));
+  
+    return {
+      containerAspectRatio: rotatedWidth / rotatedHeight,
+      imageWidthPercent: (width / rotatedWidth) * 100,
+    };
   }
   
   renderStatus({ mower, stateDetail, entityId }) {
