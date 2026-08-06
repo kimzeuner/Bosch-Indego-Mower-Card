@@ -284,13 +284,19 @@ export class IndegoMowerCard extends LitElement {
       hold: this.config.map_hold_action,
     };
   
+    const normalizedRotation = ((rotation % 360) + 360) % 360;
+    const swapsDimensions =
+      normalizedRotation === 90 || normalizedRotation === 270;
+  
     return html`
-      <div class="image-container">
+      <div
+        class="image-container ${swapsDimensions ? "swapped" : ""}"
+        style="--map-rotation:${rotation}deg;"
+      >
         <img
           class="image"
           src="${imageUrl}"
           alt="Mower map"
-          style="transform: rotate(${rotation}deg);"
           @click=${() => this.handleTap(entityId, actionConfigs)}
           @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
           @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
