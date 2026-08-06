@@ -141,6 +141,41 @@ export class IndegoMowerCardEditor extends LitElement {
       resize: vertical;
     }
 
+    .rotation-control {
+      margin-top: 12px;
+    }
+    
+    .rotation-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    
+    .rotation-value {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .rotation-number {
+      width: 72px;
+      box-sizing: border-box;
+      padding: 6px 8px;
+      border: 1px solid var(--divider-color);
+      border-radius: 4px;
+      background: var(--card-background-color);
+      color: var(--primary-text-color);
+      font: inherit;
+      text-align: right;
+    }
+    
+    .rotation-slider {
+      width: 100%;
+      margin: 0;
+    }
+
     @media (max-width: 600px) {
       .grid-2,
       .action-grid {
@@ -249,12 +284,57 @@ export class IndegoMowerCardEditor extends LitElement {
           allow-custom-entity
           @value-changed=${(event) => this.handleEntityChanged(key, event)}
         ></ha-entity-picker>
-
-        ${ACTION_FIELDS[key] ? this.renderActionSection(ACTION_FIELDS[key]) : html``}
+        
+        ${key === "map_entity"
+          ? this.renderMapRotation(translations)
+          : html``}
+        
+        ${ACTION_FIELDS[key]
+          ? this.renderActionSection(ACTION_FIELDS[key])
+          : html``}
       </div>
     `;
   }
 
+  renderMapRotation(translations) {
+    const rotation = this.normalizeMapRotation(this._config.map_rotation);
+  
+    return html`
+      <div class="rotation-control">
+        <div class="rotation-header">
+          <span class="sub-label">
+            ${t(translations, "editor.map_rotation")}
+          </span>
+  
+          <div class="rotation-value">
+            <input
+              class="rotation-number"
+              type="number"
+              min="0"
+              max="360"
+              step="1"
+              .value=${String(rotation)}
+              @change=${(event) =>
+                this.updateMapRotation(event.target.value)}
+            />
+            <span>°</span>
+          </div>
+        </div>
+  
+        <input
+          class="rotation-slider"
+          type="range"
+          min="0"
+          max="360"
+          step="1"
+          .value=${String(rotation)}
+          @input=${(event) =>
+            this.updateMapRotation(event.target.value)}
+        />
+      </div>
+    `;
+  }
+  
   renderActionSection(prefix) {
     const isOpen = this._openSections[prefix] === true;
 
@@ -436,6 +516,24 @@ export class IndegoMowerCardEditor extends LitElement {
       ...this._openSections,
       [prefix]: this._openSections[prefix] !== true,
     };
+  }
+
+  normalizeMapRotation(value) {
+    const rotation = Number.parseInt(value, 10);
+  
+    if (!Number.isFinite(rotation)) {
+      return 0;
+    }
+  
+    return Math.min(360, Math.max(0, rotation));
+  }
+  
+  updateMapRotation(value) {
+    const mapRotation = this.normalizeMapRotation(value);
+  
+    this.updateConfig({
+      map_rotation: mapRotation,
+    });
   }
 
   updateSimpleConfigValue(key, value) {
