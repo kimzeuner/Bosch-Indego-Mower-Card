@@ -14,31 +14,27 @@ export const CARD_STYLES = `
   }
 
   .image-container {
+    position: relative;
     width: 100%;
+    aspect-ratio: var(--map-container-ratio, 1);
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-  }
-  
-  .image-container.swapped {
-    aspect-ratio: 1 / 1;
   }
   
   .image {
-    width: 100%;
+    position: absolute;
+    width: var(--map-image-width, 100%);
+    max-width: none;
     height: auto;
     display: block;
     cursor: pointer;
     transform: rotate(var(--map-rotation, 0deg));
     transform-origin: center center;
-    transition: transform 0.2s ease;
-  }
-  
-  .image-container.swapped .image {
-    width: auto;
-    height: 100%;
-    max-width: 100%;
+    transition:
+      transform 0.2s ease,
+      width 0.2s ease;
   }
 
   .status {
