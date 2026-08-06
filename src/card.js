@@ -276,6 +276,8 @@ export class IndegoMowerCard extends LitElement {
       return html`<div class="status">${t(translations, "no_map")}</div>`;
     }
   
+    const rotation = Number(this.config.map_rotation) || 0;
+  
     const actionConfigs = {
       tap: this.config.map_tap_action,
       double_tap: this.config.map_double_tap_action,
@@ -283,17 +285,20 @@ export class IndegoMowerCard extends LitElement {
     };
   
     return html`
-      <img
-        class="image"
-        src="${imageUrl}"
-        alt="Mower map"
-        @click=${() => this.handleTap(entityId, actionConfigs)}
-        @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
-        @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
-        @pointerup=${() => this.handleHoldEnd()}
-        @pointerleave=${() => this.handleHoldEnd()}
-        @pointercancel=${() => this.handleHoldEnd()}
-      />
+      <div class="image-container">
+        <img
+          class="image"
+          src="${imageUrl}"
+          alt="Mower map"
+          style="transform: rotate(${rotation}deg);"
+          @click=${() => this.handleTap(entityId, actionConfigs)}
+          @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
+          @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
+          @pointerup=${() => this.handleHoldEnd()}
+          @pointerleave=${() => this.handleHoldEnd()}
+          @pointercancel=${() => this.handleHoldEnd()}
+        />
+      </div>
     `;
   }
   
