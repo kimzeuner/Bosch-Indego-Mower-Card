@@ -13,10 +13,16 @@ export const CARD_STYLES = `
     font-weight: bold;
   }
 
+  .image-container {
+    width: 100%;
+    overflow: hidden;
+  }
+  
   .image {
     width: 100%;
     display: block;
     cursor: pointer;
+    transform-origin: center center;
   }
 
   .status {
