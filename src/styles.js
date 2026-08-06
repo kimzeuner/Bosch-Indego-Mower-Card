@@ -15,14 +15,30 @@ export const CARD_STYLES = `
 
   .image-container {
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
+  }
+  
+  .image-container.swapped {
+    aspect-ratio: 1 / 1;
   }
   
   .image {
     width: 100%;
+    height: auto;
     display: block;
     cursor: pointer;
+    transform: rotate(var(--map-rotation, 0deg));
     transform-origin: center center;
+    transition: transform 0.2s ease;
+  }
+  
+  .image-container.swapped .image {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
   }
 
   .status {
