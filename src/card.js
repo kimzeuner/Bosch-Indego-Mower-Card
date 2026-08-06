@@ -297,7 +297,7 @@ export class IndegoMowerCard extends LitElement {
         style="
           --map-rotation: ${rotation}deg;
           --map-container-ratio: ${geometry.containerAspectRatio};
-          --map-image-width: ${geometry.imageWidthPercent}%;
+          --map-scale: ${geometry.scale};
         "
       >
         <img
@@ -334,20 +334,25 @@ export class IndegoMowerCard extends LitElement {
     const angle = ((rotation % 360) + 360) % 360;
     const radians = (angle * Math.PI) / 180;
   
-    const width = this._mapAspectRatio || 1;
-    const height = 1;
+    const imageWidth = this._mapAspectRatio || 1;
+    const imageHeight = 1;
   
     const rotatedWidth =
-      Math.abs(width * Math.cos(radians)) +
-      Math.abs(height * Math.sin(radians));
+      Math.abs(imageWidth * Math.cos(radians)) +
+      Math.abs(imageHeight * Math.sin(radians));
   
     const rotatedHeight =
-      Math.abs(width * Math.sin(radians)) +
-      Math.abs(height * Math.cos(radians));
+      Math.abs(imageWidth * Math.sin(radians)) +
+      Math.abs(imageHeight * Math.cos(radians));
+  
+    const scale = Math.min(
+      imageWidth / rotatedWidth,
+      imageHeight / rotatedHeight
+    );
   
     return {
-      containerAspectRatio: rotatedWidth / rotatedHeight,
-      imageWidthPercent: (width / rotatedWidth) * 100,
+      containerAspectRatio: imageWidth / imageHeight,
+      scale,
     };
   }
   
