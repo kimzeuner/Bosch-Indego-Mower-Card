@@ -12,6 +12,7 @@
     "mower": "Mower",
     "map": "Map",
     "show_map": "Show",
+    "map_rotation": "Map rotation",
     "battery": "Battery",
     "show_battery_header": "Show",
     "charging": "Charging",
