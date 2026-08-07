@@ -14,6 +14,8 @@ export const DEFAULT_CONFIG = {
   action_layout: "icon",
   map_rotation: 0,
   map_zoom: 1,
+  map_offset_x: 0,
+  map_offset_y: 0,
   theme_button_background: "var(--card-background-color)",
   theme_primary_color: "var(--primary-color)",
   theme_warning_color: "var(--warning-color)",
