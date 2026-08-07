@@ -1,5 +1,8 @@
 export const DEFAULT_CONFIG = {
   entity: "",
+  title: "",
+  header_layout: "inline",
+  battery_alignment: "right",
   map_entity: "",
   battery_entity: "",
   charging_entity: "",
@@ -9,14 +12,20 @@ export const DEFAULT_CONFIG = {
   stuck_entity: "",
   alert_entity: "",
   show_map: true,
-  show_battery_header: true,
   show_status: true,
   action_layout: "icon",
+  
+  map_rotation: 0,
+  map_zoom: 1,
+  map_offset_x: 0,
+  map_offset_y: 0,
+  
   theme_button_background: "var(--card-background-color)",
   theme_primary_color: "var(--primary-color)",
   theme_warning_color: "var(--warning-color)",
   theme_error_color: "var(--error-color)",
   theme_border_color: "rgba(0,150,136,0.2)",
+  
   map_tap_action: { action: "more-info" },
   map_double_tap_action: { action: "none" },
   map_hold_action: { action: "none" },

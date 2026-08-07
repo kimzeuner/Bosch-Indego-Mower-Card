@@ -32,12 +32,18 @@ export class IndegoMowerCard extends LitElement {
   static properties = {
     hass: {},
     config: { state: true },
+    _mapAspectRatio: { state: true },
   };
 
   static styles = css`
     ${unsafeCSS(CARD_STYLES)}
   `;
 
+  constructor() {
+    super();
+    this._mapAspectRatio = 1;
+  }
+  
   static getConfigElement() {
     return document.createElement("indego-mower-card-editor");
   }
@@ -148,16 +154,13 @@ export class IndegoMowerCard extends LitElement {
             "
           >
           
-        ${this.config.show_battery_header !== false
-          ? this.renderBatteryHeader({
-              translations,
-              mowerState,
-              battery,
-              batteryPct,
-              charging,
-              entityId: this.config.battery_entity,
-            })
-          : html``}
+        ${this.renderHeader({
+          translations,
+          mowerState,
+          battery,
+          batteryPct,
+          charging,
+        })}
         
         ${this.config.show_map !== false
           ? this.renderMap({
@@ -182,40 +185,69 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
 
-  renderBatteryHeader({ translations, mowerState, battery, batteryPct, charging, entityId }) {
-    if (mowerState === "docked" || !battery) {
+  renderHeader({
+    translations,
+    mowerState,
+    battery,
+    batteryPct,
+    charging,
+  }) {
+    const title = this.config.title?.trim() || "";
+    const layout = this.config.header_layout || "inline";
+    const batteryAlignment =
+      this.config.battery_alignment || "right";
+  
+    const showTitle =
+      (layout === "inline" ||
+        layout === "stacked" ||
+        layout === "title") &&
+      Boolean(title);
+  
+    const showBatteryByLayout =
+      layout === "inline" ||
+      layout === "stacked" ||
+      layout === "battery";
+  
+    const showBattery =
+      showBatteryByLayout &&
+      mowerState !== "docked" &&
+      battery;
+  
+    if (!showTitle && !showBattery) {
       return html``;
     }
   
-    const actionConfigs = {
-      tap: this.config.battery_tap_action,
-      double_tap: this.config.battery_double_tap_action,
-      hold: this.config.battery_hold_action,
-    };
-  
     return html`
-      <div class="header">
-        <div
-          class="battery clickable"
-          @click=${() => this.handleTap(entityId, actionConfigs)}
-          @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
-          @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
-          @pointerup=${() => this.handleHoldEnd()}
-          @pointerleave=${() => this.handleHoldEnd()}
-          @pointercancel=${() => this.handleHoldEnd()}
-          style="
-            background: linear-gradient(
-              90deg,
-              ${batteryHeaderColor(batteryPct)} 0%,
-              ${batteryHeaderColor(batteryPct)} ${batteryPct}%,
-              transparent ${batteryPct}%,
-              transparent 100%
-            );
-          "
-        >
-          ${t(translations, "battery")}: ${batteryPct}%
-          ${charging?.state === "on" ? "⚡" : ""}
-        </div>
+      <div
+        class="header ${layout === "battery" ? "battery-only" : layout} battery-${batteryAlignment}"
+      >
+        ${showTitle
+          ? html`
+              <div class="card-title">
+                ${title}
+              </div>
+            `
+          : html``}
+  
+        ${showBattery
+          ? html`
+              <div
+                class="battery"
+                style="
+                  background: linear-gradient(
+                    90deg,
+                    ${batteryHeaderColor(batteryPct)} 0%,
+                    ${batteryHeaderColor(batteryPct)} ${batteryPct}%,
+                    transparent ${batteryPct}%,
+                    transparent 100%
+                  );
+                "
+              >
+                ${t(translations, "battery")}: ${batteryPct}%
+                ${charging?.state === "on" ? "⚡" : ""}
+              </div>
+            `
+          : html``}
       </div>
     `;
   }
@@ -276,6 +308,22 @@ export class IndegoMowerCard extends LitElement {
       return html`<div class="status">${t(translations, "no_map")}</div>`;
     }
   
+    const rotation = Number(this.config.map_rotation) || 0;
+    const zoom = Math.min(
+      2,
+      Math.max(1, Number(this.config.map_zoom) || 1)
+    );
+    const offsetX = Math.min(
+      100,
+      Math.max(-100, Number(this.config.map_offset_x) || 0)
+    );
+    
+    const offsetY = Math.min(
+      100,
+      Math.max(-100, Number(this.config.map_offset_y) || 0)
+    );
+    const geometry = this.getRotatedMapGeometry(rotation);
+  
     const actionConfigs = {
       tap: this.config.map_tap_action,
       double_tap: this.config.map_double_tap_action,
@@ -283,18 +331,71 @@ export class IndegoMowerCard extends LitElement {
     };
   
     return html`
-      <img
-        class="image"
-        src="${imageUrl}"
-        alt="Mower map"
-        @click=${() => this.handleTap(entityId, actionConfigs)}
-        @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
-        @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
-        @pointerup=${() => this.handleHoldEnd()}
-        @pointerleave=${() => this.handleHoldEnd()}
-        @pointercancel=${() => this.handleHoldEnd()}
-      />
+      <div
+        class="image-container"
+        style="
+          --map-rotation: ${rotation}deg;
+          --map-container-ratio: ${geometry.containerAspectRatio};
+          --map-scale: ${geometry.scale};
+          --map-zoom: ${zoom};
+          --map-offset-x: ${offsetX}%;
+          --map-offset-y: ${offsetY}%;
+        "
+      >
+        <img
+          class="image"
+          src="${imageUrl}"
+          alt="Mower map"
+          @load=${(event) => this.handleMapImageLoad(event)}
+          @click=${() => this.handleTap(entityId, actionConfigs)}
+          @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
+          @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
+          @pointerup=${() => this.handleHoldEnd()}
+          @pointerleave=${() => this.handleHoldEnd()}
+          @pointercancel=${() => this.handleHoldEnd()}
+        />
+      </div>
     `;
+  }
+
+  handleMapImageLoad(event) {
+    const image = event.currentTarget;
+  
+    if (!image?.naturalWidth || !image?.naturalHeight) {
+      return;
+    }
+  
+    const aspectRatio = image.naturalWidth / image.naturalHeight;
+  
+    if (this._mapAspectRatio !== aspectRatio) {
+      this._mapAspectRatio = aspectRatio;
+    }
+  }
+  
+  getRotatedMapGeometry(rotation) {
+    const angle = ((rotation % 360) + 360) % 360;
+    const radians = (angle * Math.PI) / 180;
+  
+    const imageWidth = this._mapAspectRatio || 1;
+    const imageHeight = 1;
+  
+    const rotatedWidth =
+      Math.abs(imageWidth * Math.cos(radians)) +
+      Math.abs(imageHeight * Math.sin(radians));
+  
+    const rotatedHeight =
+      Math.abs(imageWidth * Math.sin(radians)) +
+      Math.abs(imageHeight * Math.cos(radians));
+  
+    const scale = Math.min(
+      imageWidth / rotatedWidth,
+      imageHeight / rotatedHeight
+    );
+  
+    return {
+      containerAspectRatio: imageWidth / imageHeight,
+      scale,
+    };
   }
   
   renderStatus({ mower, stateDetail, entityId }) {

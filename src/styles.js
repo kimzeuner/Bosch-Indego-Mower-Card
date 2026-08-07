@@ -2,8 +2,61 @@ export const CARD_STYLES = `
   .header {
     padding: 12px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 12px;
+  }
+
+  .header.inline {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .header.stacked {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header.title {
+    justify-content: flex-start;
+  }
+  
+  .header.battery-only.battery-left {
+    justify-content: flex-start;
+  }
+  
+  .header.battery-only.battery-right {
+    justify-content: flex-end;
+  }
+
+  .header.stacked.battery-left .battery {
+    align-self: flex-start;
+  }
+  
+  .header.stacked.battery-right .battery {
+    align-self: flex-end;
+  }
+  
+  .card-title {
+    min-width: 0;
+    flex: 1;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--primary-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .header.stacked .battery {
+    align-self: flex-end;
+  }
+  
+  .header.inline .battery {
+    flex: 0 0 auto;
+  }
+  
+  .header .battery {
+    flex: 0 0 auto;
   }
 
   .battery {
@@ -13,10 +66,38 @@ export const CARD_STYLES = `
     font-weight: bold;
   }
 
-  .image {
+  .image-container {
+    position: relative;
     width: 100%;
+    aspect-ratio: var(--map-container-ratio, 1);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .image {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
     display: block;
     cursor: pointer;
+  
+    left: 50%;
+    top: 50%;
+  
+    transform:
+      translate(
+        calc(-50% + var(--map-offset-x, 0%)),
+        calc(-50% + var(--map-offset-y, 0%))
+      )
+      rotate(var(--map-rotation, 0deg))
+      scale(calc(var(--map-scale, 1) * var(--map-zoom, 1)));
+  
+    transform-origin: center center;
+  
+    transition: transform 0.2s ease;
   }
 
   .status {

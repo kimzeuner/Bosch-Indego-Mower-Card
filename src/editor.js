@@ -141,6 +141,41 @@ export class IndegoMowerCardEditor extends LitElement {
       resize: vertical;
     }
 
+    .rotation-control {
+      margin-top: 12px;
+    }
+    
+    .rotation-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    
+    .rotation-value {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .rotation-number {
+      width: 72px;
+      box-sizing: border-box;
+      padding: 6px 8px;
+      border: 1px solid var(--divider-color);
+      border-radius: 4px;
+      background: var(--card-background-color);
+      color: var(--primary-text-color);
+      font: inherit;
+      text-align: right;
+    }
+    
+    .rotation-slider {
+      width: 100%;
+      margin: 0;
+    }
+
     @media (max-width: 600px) {
       .grid-2,
       .action-grid {
@@ -169,7 +204,7 @@ export class IndegoMowerCardEditor extends LitElement {
     const fields = [
       ["entity", t(translations, "editor.mower")],
       ["map_entity", t(translations, "editor.map"), "show_map"],
-      ["battery_entity", t(translations, "editor.battery"), "show_battery_header"],
+      ["battery_entity", t(translations, "editor.battery")],
       ["charging_entity", t(translations, "editor.charging")],
       ["state_detail_entity", t(translations, "editor.state_detail"), "show_status"],
       ["mowed_entity", t(translations, "editor.mowed")],
@@ -191,6 +226,13 @@ export class IndegoMowerCardEditor extends LitElement {
       ["text", t(translations, "editor.action_layout_text")],
       ["icon_text", t(translations, "editor.action_layout_icon_text")],
       ["text_icon", t(translations, "editor.action_layout_text_icon")],
+    ];
+
+    const headerLayoutOptions = [
+      ["inline", t(translations, "editor.header_layout_inline")],
+      ["stacked", t(translations, "editor.header_layout_stacked")],
+      ["title", t(translations, "editor.header_layout_title")],
+      ["battery", t(translations, "editor.header_layout_battery")],
     ];
 
     return html`
@@ -250,11 +292,210 @@ export class IndegoMowerCardEditor extends LitElement {
           @value-changed=${(event) => this.handleEntityChanged(key, event)}
         ></ha-entity-picker>
 
-        ${ACTION_FIELDS[key] ? this.renderActionSection(ACTION_FIELDS[key]) : html``}
+        ${key === "entity"
+          ? html`
+              <div style="margin-top:10px;">
+                ${this.renderTextForm(
+                  this._config.title || "",
+                  t(translations, "editor.title"),
+                  (value) => this.updateSimpleConfigValue("title", value)
+                )}
+        
+                <div style="margin-top:10px;">
+                  ${this.renderSelect(
+                    this._config.header_layout || "inline",
+                    [
+                      ["inline", t(translations, "editor.header_layout_inline")],
+                      ["stacked", t(translations, "editor.header_layout_stacked")],
+                      ["title", t(translations, "editor.header_layout_title")],
+                      ["battery", t(translations, "editor.header_layout_battery")],
+                    ],
+                    (value) =>
+                      this.updateConfig({
+                        header_layout: value || "inline",
+                      })
+                  )}
+                </div>
+        
+                ${["stacked", "battery"].includes(
+                  this._config.header_layout || "inline"
+                )
+                  ? html`
+                      <div style="margin-top:10px;">
+                        ${this.renderSelect(
+                          this._config.battery_alignment || "right",
+                          [
+                            [
+                              "left",
+                              t(translations, "editor.battery_alignment_left"),
+                            ],
+                            [
+                              "right",
+                              t(translations, "editor.battery_alignment_right"),
+                            ],
+                          ],
+                          (value) =>
+                            this.updateConfig({
+                              battery_alignment: value || "right",
+                            })
+                        )}
+                      </div>
+                    `
+                  : html``}
+              </div>
+            `
+          : html``}
+        
+        ${key === "map_entity"
+          ? this.renderMapRotation(translations)
+          : html``}
+        
+        ${ACTION_FIELDS[key]
+          ? this.renderActionSection(ACTION_FIELDS[key])
+          : html``}
       </div>
     `;
   }
 
+  renderMapRotation(translations) {
+    const rotation = this.normalizeMapRotation(this._config.map_rotation);
+    const zoom = this.normalizeMapZoom(this._config.map_zoom);
+    const offsetX = this.normalizeMapOffset(this._config.map_offset_x);
+    const offsetY = this.normalizeMapOffset(this._config.map_offset_y);
+  
+    return html`
+      <div class="rotation-control">
+        <!-- Rotation -->
+        <div class="rotation-header">
+          <span class="sub-label">
+            ${t(translations, "editor.map_rotation")}
+          </span>
+  
+          <div class="rotation-value">
+            <input
+              class="rotation-number"
+              type="number"
+              min="0"
+              max="360"
+              step="1"
+              .value=${String(rotation)}
+              @change=${(event) =>
+                this.updateMapRotation(event.target.value)}
+            />
+            <span>°</span>
+          </div>
+        </div>
+  
+        <input
+          class="rotation-slider"
+          type="range"
+          min="0"
+          max="360"
+          step="1"
+          .value=${String(rotation)}
+          @input=${(event) =>
+            this.updateMapRotation(event.target.value)}
+        />
+  
+        <!-- Zoom -->
+        <div class="rotation-header" style="margin-top:12px;">
+          <span class="sub-label">
+            ${t(translations, "editor.map_zoom")}
+          </span>
+  
+          <div class="rotation-value">
+            <input
+              class="rotation-number"
+              type="number"
+              min="1"
+              max="2"
+              step="0.01"
+              .value=${String(zoom)}
+              @change=${(event) =>
+                this.updateMapZoom(event.target.value)}
+            />
+            <span>×</span>
+          </div>
+        </div>
+  
+        <input
+          class="rotation-slider"
+          type="range"
+          min="1"
+          max="2"
+          step="0.01"
+          .value=${String(zoom)}
+          @input=${(event) =>
+            this.updateMapZoom(event.target.value)}
+        />
+  
+        <!-- Horizontal Offset -->
+        <div class="rotation-header" style="margin-top:12px;">
+          <span class="sub-label">
+            ${t(translations, "editor.map_offset_x")}
+          </span>
+  
+          <div class="rotation-value">
+            <input
+              class="rotation-number"
+              type="number"
+              min="-100"
+              max="100"
+              step="1"
+              .value=${String(offsetX)}
+              @change=${(event) =>
+                this.updateMapOffset("map_offset_x", event.target.value)}
+            />
+            <span>%</span>
+          </div>
+        </div>
+  
+        <input
+          class="rotation-slider"
+          type="range"
+          min="-100"
+          max="100"
+          step="1"
+          .value=${String(offsetX)}
+          @input=${(event) =>
+            this.updateMapOffset("map_offset_x", event.target.value)}
+        />
+  
+        <!-- Vertical Offset -->
+        <div class="rotation-header" style="margin-top:12px;">
+          <span class="sub-label">
+            ${t(translations, "editor.map_offset_y")}
+          </span>
+  
+          <div class="rotation-value">
+            <input
+              class="rotation-number"
+              type="number"
+              min="-100"
+              max="100"
+              step="1"
+              .value=${String(offsetY)}
+              @change=${(event) =>
+                this.updateMapOffset("map_offset_y", event.target.value)}
+            />
+            <span>%</span>
+          </div>
+        </div>
+  
+        <input
+          class="rotation-slider"
+          type="range"
+          min="-100"
+          max="100"
+          step="1"
+          .value=${String(offsetY)}
+          @input=${(event) =>
+            this.updateMapOffset("map_offset_y", event.target.value)}
+        />
+      </div>
+    `;
+  }
+  
   renderActionSection(prefix) {
     const isOpen = this._openSections[prefix] === true;
 
@@ -436,6 +677,60 @@ export class IndegoMowerCardEditor extends LitElement {
       ...this._openSections,
       [prefix]: this._openSections[prefix] !== true,
     };
+  }
+
+  normalizeMapRotation(value) {
+    const rotation = Number.parseInt(value, 10);
+  
+    if (!Number.isFinite(rotation)) {
+      return 0;
+    }
+  
+    return Math.min(360, Math.max(0, rotation));
+  }
+
+  normalizeMapZoom(value) {
+    const zoom = Number.parseFloat(value);
+  
+    if (!Number.isFinite(zoom)) {
+      return 1;
+    }
+  
+    return Math.min(2, Math.max(1, zoom));
+  }
+
+  normalizeMapOffset(value) {
+    const offset = Number.parseInt(value, 10);
+  
+    if (!Number.isFinite(offset)) {
+      return 0;
+    }
+  
+    return Math.min(100, Math.max(-100, offset));
+  }
+  
+  updateMapRotation(value) {
+    const mapRotation = this.normalizeMapRotation(value);
+  
+    this.updateConfig({
+      map_rotation: mapRotation,
+    });
+  }
+
+  updateMapZoom(value) {
+    const mapZoom = this.normalizeMapZoom(value);
+  
+    this.updateConfig({
+      map_zoom: mapZoom,
+    });
+  }
+
+  updateMapOffset(key, value) {
+    const offset = this.normalizeMapOffset(value);
+  
+    this.updateConfig({
+      [key]: offset,
+    });
   }
 
   updateSimpleConfigValue(key, value) {
