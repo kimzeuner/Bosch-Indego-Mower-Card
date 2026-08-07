@@ -20,17 +20,17 @@ export const CARD_STYLES = `
     justify-content: flex-start;
   }
   
-  .header.battery {
+  .header.battery-only {
     justify-content: flex-end;
   }
 
   .header.stacked.battery-left .battery,
-  .header.battery.battery-left .battery {
+  .header.battery-only.battery-left .battery {
     align-self: flex-start;
   }
   
   .header.stacked.battery-right .battery,
-  .header.battery.battery-right .battery {
+  .header.battery-only.battery-right .battery {
     align-self: flex-end;
   }
   
@@ -52,21 +52,9 @@ export const CARD_STYLES = `
   .header.inline .battery {
     flex: 0 0 auto;
   }
-
-  .card-title {
-    min-width: 0;
-    flex: 1;
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--primary-text-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
   
   .header .battery {
     flex: 0 0 auto;
-    margin-left: 12px;
   }
 
   .battery {
