@@ -316,6 +316,32 @@ export class IndegoMowerCardEditor extends LitElement {
                       })
                   )}
                 </div>
+        
+                ${["stacked", "battery"].includes(
+                  this._config.header_layout || "inline"
+                )
+                  ? html`
+                      <div style="margin-top:10px;">
+                        ${this.renderSelect(
+                          this._config.battery_alignment || "right",
+                          [
+                            [
+                              "left",
+                              t(translations, "editor.battery_alignment_left"),
+                            ],
+                            [
+                              "right",
+                              t(translations, "editor.battery_alignment_right"),
+                            ],
+                          ],
+                          (value) =>
+                            this.updateConfig({
+                              battery_alignment: value || "right",
+                            })
+                        )}
+                      </div>
+                    `
+                  : html``}
               </div>
             `
           : html``}
