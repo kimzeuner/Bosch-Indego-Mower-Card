@@ -11,6 +11,11 @@
   "editor": {
     "mower": "Mower",
     "map": "Map",
+    "header_layout": "Header layout",
+    "header_layout_inline": "Title and battery in one row",
+    "header_layout_stacked": "Title and battery stacked",
+    "header_layout_title": "Title only",
+    "header_layout_battery": "Battery only",
     "show_map": "Show",
     "map_rotation": "Map rotation",
     "map_zoom": "Map zoom",
