@@ -2,8 +2,45 @@ export const CARD_STYLES = `
   .header {
     padding: 12px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 12px;
+  }
+
+  .header.inline {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .header.stacked {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header.title {
+    justify-content: flex-start;
+  }
+  
+  .header.battery {
+    justify-content: flex-end;
+  }
+  
+  .card-title {
+    min-width: 0;
+    flex: 1;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--primary-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .header.stacked .battery {
+    align-self: flex-end;
+  }
+  
+  .header.inline .battery {
+    flex: 0 0 auto;
   }
 
   .card-title {
