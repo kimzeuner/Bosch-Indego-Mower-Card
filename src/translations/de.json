@@ -11,6 +11,11 @@
   "editor": {
     "mower": "Mäher",
     "map": "Karte",
+    "header_layout": "Header-Layout",
+    "header_layout_inline": "Titel und Batterie in einer Zeile",
+    "header_layout_stacked": "Titel und Batterie untereinander",
+    "header_layout_title": "Nur Titel",
+    "header_layout_battery": "Nur Batterie",
     "show_map": "Anzeigen",
     "map_rotation": "Kartendrehung",
     "map_zoom": "Kartenzoom",
