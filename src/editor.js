@@ -228,6 +228,13 @@ export class IndegoMowerCardEditor extends LitElement {
       ["text_icon", t(translations, "editor.action_layout_text_icon")],
     ];
 
+    const headerLayoutOptions = [
+      ["inline", t(translations, "editor.header_layout_inline")],
+      ["stacked", t(translations, "editor.header_layout_stacked")],
+      ["title", t(translations, "editor.header_layout_title")],
+      ["battery", t(translations, "editor.header_layout_battery")],
+    ];
+
     return html`
       <div class="editor">
         ${fields.map(([key, label, toggleKey]) =>
@@ -284,6 +291,34 @@ export class IndegoMowerCardEditor extends LitElement {
           allow-custom-entity
           @value-changed=${(event) => this.handleEntityChanged(key, event)}
         ></ha-entity-picker>
+
+        ${key === "entity"
+          ? html`
+              <div style="margin-top:10px;">
+                ${this.renderTextForm(
+                  this._config.title || "",
+                  t(translations, "editor.title"),
+                  (value) => this.updateSimpleConfigValue("title", value)
+                )}
+        
+                <div style="margin-top:10px;">
+                  ${this.renderSelect(
+                    this._config.header_layout || "inline",
+                    [
+                      ["inline", t(translations, "editor.header_layout_inline")],
+                      ["stacked", t(translations, "editor.header_layout_stacked")],
+                      ["title", t(translations, "editor.header_layout_title")],
+                      ["battery", t(translations, "editor.header_layout_battery")],
+                    ],
+                    (value) =>
+                      this.updateConfig({
+                        header_layout: value || "inline",
+                      })
+                  )}
+                </div>
+              </div>
+            `
+          : html``}
         
         ${key === "map_entity"
           ? this.renderMapRotation(translations)
