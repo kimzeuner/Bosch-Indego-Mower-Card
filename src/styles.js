@@ -6,6 +6,22 @@ export const CARD_STYLES = `
     align-items: center;
   }
 
+  .card-title {
+    min-width: 0;
+    flex: 1;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--primary-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .header .battery {
+    flex: 0 0 auto;
+    margin-left: 12px;
+  }
+
   .battery {
     border: 1px solid var(--indego-border-color, rgba(0,150,136,0.2));
     border-radius: 8px;
