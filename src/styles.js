@@ -23,6 +23,16 @@ export const CARD_STYLES = `
   .header.battery {
     justify-content: flex-end;
   }
+
+  .header.stacked.battery-left .battery,
+  .header.battery.battery-left .battery {
+    align-self: flex-start;
+  }
+  
+  .header.stacked.battery-right .battery,
+  .header.battery.battery-right .battery {
+    align-self: flex-end;
+  }
   
   .card-title {
     min-width: 0;
