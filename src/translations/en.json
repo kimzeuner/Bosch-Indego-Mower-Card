@@ -9,6 +9,7 @@
   "no_map": "No map available",
   "select_entity": "Please select a mower entity in the card configuration.",
   "editor": {
+    "title": "Title",
     "mower": "Mower",
     "map": "Map",
     "header_layout": "Header layout",
