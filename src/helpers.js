@@ -13,6 +13,7 @@ export const DEFAULT_CONFIG = {
   show_status: true,
   action_layout: "icon",
   map_rotation: 0,
+  map_zoom: 1,
   theme_button_background: "var(--card-background-color)",
   theme_primary_color: "var(--primary-color)",
   theme_warning_color: "var(--warning-color)",
