@@ -20,17 +20,19 @@ export const CARD_STYLES = `
     justify-content: flex-start;
   }
   
-  .header.battery-only {
+  .header.battery-only.battery-left {
+    justify-content: flex-start;
+  }
+  
+  .header.battery-only.battery-right {
     justify-content: flex-end;
   }
 
-  .header.stacked.battery-left .battery,
-  .header.battery-only.battery-left .battery {
+  .header.stacked.battery-left .battery {
     align-self: flex-start;
   }
   
-  .header.stacked.battery-right .battery,
-  .header.battery-only.battery-right .battery {
+  .header.stacked.battery-right .battery {
     align-self: flex-end;
   }
   
