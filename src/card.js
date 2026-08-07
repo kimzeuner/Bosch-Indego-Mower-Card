@@ -287,6 +287,15 @@ export class IndegoMowerCard extends LitElement {
       2,
       Math.max(1, Number(this.config.map_zoom) || 1)
     );
+    const offsetX = Math.min(
+      100,
+      Math.max(-100, Number(this.config.map_offset_x) || 0)
+    );
+    
+    const offsetY = Math.min(
+      100,
+      Math.max(-100, Number(this.config.map_offset_y) || 0)
+    );
     const geometry = this.getRotatedMapGeometry(rotation);
   
     const actionConfigs = {
