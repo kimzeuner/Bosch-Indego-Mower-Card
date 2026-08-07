@@ -298,6 +298,7 @@ export class IndegoMowerCardEditor extends LitElement {
 
   renderMapRotation(translations) {
     const rotation = this.normalizeMapRotation(this._config.map_rotation);
+    const zoom = this.normalizeMapZoom(this._config.map_zoom);
   
     return html`
       <div class="rotation-control">
@@ -330,6 +331,37 @@ export class IndegoMowerCardEditor extends LitElement {
           .value=${String(rotation)}
           @input=${(event) =>
             this.updateMapRotation(event.target.value)}
+        />
+  
+        <div class="rotation-header" style="margin-top:12px;">
+          <span class="sub-label">
+            ${t(translations, "editor.map_zoom")}
+          </span>
+  
+          <div class="rotation-value">
+            <input
+              class="rotation-number"
+              type="number"
+              min="1"
+              max="2"
+              step="0.01"
+              .value=${String(zoom)}
+              @change=${(event) =>
+                this.updateMapZoom(event.target.value)}
+            />
+            <span>×</span>
+          </div>
+        </div>
+  
+        <input
+          class="rotation-slider"
+          type="range"
+          min="1"
+          max="2"
+          step="0.01"
+          .value=${String(zoom)}
+          @input=${(event) =>
+            this.updateMapZoom(event.target.value)}
         />
       </div>
     `;
@@ -527,12 +559,30 @@ export class IndegoMowerCardEditor extends LitElement {
   
     return Math.min(360, Math.max(0, rotation));
   }
+
+  normalizeMapZoom(value) {
+    const zoom = Number.parseFloat(value);
+  
+    if (!Number.isFinite(zoom)) {
+      return 1;
+    }
+  
+    return Math.min(2, Math.max(1, zoom));
+  }
   
   updateMapRotation(value) {
     const mapRotation = this.normalizeMapRotation(value);
   
     this.updateConfig({
       map_rotation: mapRotation,
+    });
+  }
+
+  updateMapZoom(value) {
+    const mapZoom = this.normalizeMapZoom(value);
+  
+    this.updateConfig({
+      map_zoom: mapZoom,
     });
   }
 
