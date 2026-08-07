@@ -193,21 +193,38 @@ export class IndegoMowerCard extends LitElement {
     charging,
   }) {
     const title = this.config.title?.trim() || "";
+    const layout = this.config.header_layout || "inline";
+  
+    const showTitle =
+      (layout === "inline" ||
+        layout === "stacked" ||
+        layout === "title") &&
+      Boolean(title);
+  
+    const showBatteryByLayout =
+      layout === "inline" ||
+      layout === "stacked" ||
+      layout === "battery";
   
     const showBattery =
+      showBatteryByLayout &&
       this.config.show_battery_header !== false &&
       mowerState !== "docked" &&
       battery;
   
-    if (!title && !showBattery) {
+    if (!showTitle && !showBattery) {
       return html``;
     }
   
     return html`
-      <div class="header">
-        <div class="card-title">
-          ${title}
-        </div>
+      <div class="header ${layout}">
+        ${showTitle
+          ? html`
+              <div class="card-title">
+                ${title}
+              </div>
+            `
+          : html``}
   
         ${showBattery
           ? html`
