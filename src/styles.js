@@ -31,7 +31,7 @@ export const CARD_STYLES = `
     cursor: pointer;
     transform:
       rotate(var(--map-rotation, 0deg))
-      scale(var(--map-scale, 1));
+      scale(calc(var(--map-scale, 1) * var(--map-zoom, 1)));
     transform-origin: center center;
     transition: transform 0.2s ease;
   }
