@@ -13,6 +13,7 @@
     "map": "Karte",
     "show_map": "Anzeigen",
     "map_rotation": "Kartendrehung",
+    "map_zoom": "Kartenzoom",
     "battery": "Batterie",
     "show_battery_header": "Anzeigen",
     "charging": "Lädt",
