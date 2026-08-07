@@ -299,9 +299,12 @@ export class IndegoMowerCardEditor extends LitElement {
   renderMapRotation(translations) {
     const rotation = this.normalizeMapRotation(this._config.map_rotation);
     const zoom = this.normalizeMapZoom(this._config.map_zoom);
+    const offsetX = this.normalizeMapOffset(this._config.map_offset_x);
+    const offsetY = this.normalizeMapOffset(this._config.map_offset_y);
   
     return html`
       <div class="rotation-control">
+        <!-- Rotation -->
         <div class="rotation-header">
           <span class="sub-label">
             ${t(translations, "editor.map_rotation")}
@@ -333,6 +336,7 @@ export class IndegoMowerCardEditor extends LitElement {
             this.updateMapRotation(event.target.value)}
         />
   
+        <!-- Zoom -->
         <div class="rotation-header" style="margin-top:12px;">
           <span class="sub-label">
             ${t(translations, "editor.map_zoom")}
@@ -362,6 +366,70 @@ export class IndegoMowerCardEditor extends LitElement {
           .value=${String(zoom)}
           @input=${(event) =>
             this.updateMapZoom(event.target.value)}
+        />
+  
+        <!-- Horizontal Offset -->
+        <div class="rotation-header" style="margin-top:12px;">
+          <span class="sub-label">
+            ${t(translations, "editor.map_offset_x")}
+          </span>
+  
+          <div class="rotation-value">
+            <input
+              class="rotation-number"
+              type="number"
+              min="-100"
+              max="100"
+              step="1"
+              .value=${String(offsetX)}
+              @change=${(event) =>
+                this.updateMapOffset("map_offset_x", event.target.value)}
+            />
+            <span>%</span>
+          </div>
+        </div>
+  
+        <input
+          class="rotation-slider"
+          type="range"
+          min="-100"
+          max="100"
+          step="1"
+          .value=${String(offsetX)}
+          @input=${(event) =>
+            this.updateMapOffset("map_offset_x", event.target.value)}
+        />
+  
+        <!-- Vertical Offset -->
+        <div class="rotation-header" style="margin-top:12px;">
+          <span class="sub-label">
+            ${t(translations, "editor.map_offset_y")}
+          </span>
+  
+          <div class="rotation-value">
+            <input
+              class="rotation-number"
+              type="number"
+              min="-100"
+              max="100"
+              step="1"
+              .value=${String(offsetY)}
+              @change=${(event) =>
+                this.updateMapOffset("map_offset_y", event.target.value)}
+            />
+            <span>%</span>
+          </div>
+        </div>
+  
+        <input
+          class="rotation-slider"
+          type="range"
+          min="-100"
+          max="100"
+          step="1"
+          .value=${String(offsetY)}
+          @input=${(event) =>
+            this.updateMapOffset("map_offset_y", event.target.value)}
         />
       </div>
     `;
@@ -569,6 +637,16 @@ export class IndegoMowerCardEditor extends LitElement {
   
     return Math.min(2, Math.max(1, zoom));
   }
+
+  normalizeMapOffset(value) {
+    const offset = Number.parseInt(value, 10);
+  
+    if (!Number.isFinite(offset)) {
+      return 0;
+    }
+  
+    return Math.min(100, Math.max(-100, offset));
+  }
   
   updateMapRotation(value) {
     const mapRotation = this.normalizeMapRotation(value);
@@ -583,6 +661,14 @@ export class IndegoMowerCardEditor extends LitElement {
   
     this.updateConfig({
       map_zoom: mapZoom,
+    });
+  }
+
+  updateMapOffset(key, value) {
+    const offset = this.normalizeMapOffset(value);
+  
+    this.updateConfig({
+      [key]: offset,
     });
   }
 
