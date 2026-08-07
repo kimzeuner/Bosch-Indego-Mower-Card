@@ -35,7 +35,10 @@ export const CARD_STYLES = `
     top: 50%;
   
     transform:
-      translate(-50%, -50%)
+      translate(
+        calc(-50% + var(--map-offset-x, 0%)),
+        calc(-50% + var(--map-offset-y, 0%))
+      )
       rotate(var(--map-rotation, 0deg))
       scale(calc(var(--map-scale, 1) * var(--map-zoom, 1)));
   
