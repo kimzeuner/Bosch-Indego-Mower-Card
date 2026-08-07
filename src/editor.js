@@ -204,7 +204,7 @@ export class IndegoMowerCardEditor extends LitElement {
     const fields = [
       ["entity", t(translations, "editor.mower")],
       ["map_entity", t(translations, "editor.map"), "show_map"],
-      ["battery_entity", t(translations, "editor.battery"), "show_battery_header"],
+      ["battery_entity", t(translations, "editor.battery")],
       ["charging_entity", t(translations, "editor.charging")],
       ["state_detail_entity", t(translations, "editor.state_detail"), "show_status"],
       ["mowed_entity", t(translations, "editor.mowed")],
