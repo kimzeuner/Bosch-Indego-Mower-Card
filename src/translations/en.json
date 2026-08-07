@@ -13,6 +13,7 @@
     "map": "Map",
     "show_map": "Show",
     "map_rotation": "Map rotation",
+    "map_zoom": "Map zoom",
     "battery": "Battery",
     "show_battery_header": "Show",
     "charging": "Charging",
