@@ -312,6 +312,8 @@ export class IndegoMowerCard extends LitElement {
           --map-container-ratio: ${geometry.containerAspectRatio};
           --map-scale: ${geometry.scale};
           --map-zoom: ${zoom};
+          --map-offset-x: ${offsetX}%;
+          --map-offset-y: ${offsetY}%;
         "
       >
         <img
