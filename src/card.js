@@ -194,6 +194,8 @@ export class IndegoMowerCard extends LitElement {
   }) {
     const title = this.config.title?.trim() || "";
     const layout = this.config.header_layout || "inline";
+    const batteryAlignment =
+      this.config.battery_alignment || "right";
   
     const showTitle =
       (layout === "inline" ||
@@ -208,7 +210,6 @@ export class IndegoMowerCard extends LitElement {
   
     const showBattery =
       showBatteryByLayout &&
-      this.config.show_battery_header !== false &&
       mowerState !== "docked" &&
       battery;
   
@@ -217,7 +218,7 @@ export class IndegoMowerCard extends LitElement {
     }
   
     return html`
-      <div class="header ${layout}">
+      <div class="header ${layout} battery-${batteryAlignment}">
         ${showTitle
           ? html`
               <div class="card-title">
