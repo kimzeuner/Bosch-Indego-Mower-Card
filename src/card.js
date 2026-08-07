@@ -218,7 +218,9 @@ export class IndegoMowerCard extends LitElement {
     }
   
     return html`
-      <div class="header ${layout} battery-${batteryAlignment}">
+      <div
+        class="header ${layout === "battery" ? "battery-only" : layout} battery-${batteryAlignment}"
+      >
         ${showTitle
           ? html`
               <div class="card-title">
