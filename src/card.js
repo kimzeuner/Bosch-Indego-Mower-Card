@@ -154,16 +154,13 @@ export class IndegoMowerCard extends LitElement {
             "
           >
           
-        ${this.config.show_battery_header !== false
-          ? this.renderBatteryHeader({
-              translations,
-              mowerState,
-              battery,
-              batteryPct,
-              charging,
-              entityId: this.config.battery_entity,
-            })
-          : html``}
+        ${this.renderHeader({
+          translations,
+          mowerState,
+          battery,
+          batteryPct,
+          charging,
+        })}
         
         ${this.config.show_map !== false
           ? this.renderMap({
@@ -188,40 +185,49 @@ export class IndegoMowerCard extends LitElement {
     `;
   }
 
-  renderBatteryHeader({ translations, mowerState, battery, batteryPct, charging, entityId }) {
-    if (mowerState === "docked" || !battery) {
+  renderHeader({
+    translations,
+    mowerState,
+    battery,
+    batteryPct,
+    charging,
+  }) {
+    const title = this.config.title?.trim() || "";
+  
+    const showBattery =
+      this.config.show_battery_header !== false &&
+      mowerState !== "docked" &&
+      battery;
+  
+    if (!title && !showBattery) {
       return html``;
     }
   
-    const actionConfigs = {
-      tap: this.config.battery_tap_action,
-      double_tap: this.config.battery_double_tap_action,
-      hold: this.config.battery_hold_action,
-    };
-  
     return html`
       <div class="header">
-        <div
-          class="battery clickable"
-          @click=${() => this.handleTap(entityId, actionConfigs)}
-          @dblclick=${() => this.handleDoubleTap(entityId, actionConfigs)}
-          @pointerdown=${() => this.handleHoldStart(entityId, actionConfigs)}
-          @pointerup=${() => this.handleHoldEnd()}
-          @pointerleave=${() => this.handleHoldEnd()}
-          @pointercancel=${() => this.handleHoldEnd()}
-          style="
-            background: linear-gradient(
-              90deg,
-              ${batteryHeaderColor(batteryPct)} 0%,
-              ${batteryHeaderColor(batteryPct)} ${batteryPct}%,
-              transparent ${batteryPct}%,
-              transparent 100%
-            );
-          "
-        >
-          ${t(translations, "battery")}: ${batteryPct}%
-          ${charging?.state === "on" ? "⚡" : ""}
+        <div class="card-title">
+          ${title}
         </div>
+  
+        ${showBattery
+          ? html`
+              <div
+                class="battery"
+                style="
+                  background: linear-gradient(
+                    90deg,
+                    ${batteryHeaderColor(batteryPct)} 0%,
+                    ${batteryHeaderColor(batteryPct)} ${batteryPct}%,
+                    transparent ${batteryPct}%,
+                    transparent 100%
+                  );
+                "
+              >
+                ${t(translations, "battery")}: ${batteryPct}%
+                ${charging?.state === "on" ? "⚡" : ""}
+              </div>
+            `
+          : html``}
       </div>
     `;
   }
