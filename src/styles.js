@@ -24,15 +24,23 @@ export const CARD_STYLES = `
   }
   
   .image {
+    position: absolute;
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: block;
     cursor: pointer;
+  
+    left: 50%;
+    top: 50%;
+  
     transform:
+      translate(-50%, -50%)
       rotate(var(--map-rotation, 0deg))
       scale(calc(var(--map-scale, 1) * var(--map-zoom, 1)));
+  
     transform-origin: center center;
+  
     transition: transform 0.2s ease;
   }
 
