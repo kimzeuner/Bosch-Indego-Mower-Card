@@ -283,6 +283,10 @@ export class IndegoMowerCard extends LitElement {
     }
   
     const rotation = Number(this.config.map_rotation) || 0;
+    const zoom = Math.min(
+      2,
+      Math.max(1, Number(this.config.map_zoom) || 1)
+    );
     const geometry = this.getRotatedMapGeometry(rotation);
   
     const actionConfigs = {
@@ -298,6 +302,7 @@ export class IndegoMowerCard extends LitElement {
           --map-rotation: ${rotation}deg;
           --map-container-ratio: ${geometry.containerAspectRatio};
           --map-scale: ${geometry.scale};
+          --map-zoom: ${zoom};
         "
       >
         <img
